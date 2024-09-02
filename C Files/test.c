@@ -171,6 +171,7 @@ void ArgumentInputs(void) {
             count++;
         }
     }
+    fclose(fptr);
     //null terminator used to mark the ending point of the file
     file_string[file_string_logical_size] = '\0';
 
