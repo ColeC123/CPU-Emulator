@@ -151,13 +151,10 @@ void ArgumentInputs(void) {
 
     if (strncmp(readas_type, "binary", IntMin(readas_type_size, 6)) == 0) {
         interpret_file_as = BinaryStringToInt;
-        printf("\nbinary conversion\n");
     } else if (strncmp(readas_type, "hexadecimal", IntMin(readas_type_size, 11)) == 0) {
         interpret_file_as = HexStringToInt;
-        printf("\nhexadecimal conversion\n");
     } else {
         interpret_file_as = BinaryStringToInt;
-        printf("\ndefault conversion\n");
     }
     // ----- Options right now are binary and hexadecimal ------
 
