@@ -1,0 +1,75 @@
+First 5 bits detail the opcode (operation code / instruction code)
+registers are 4 bits
+addresses are 23 bits
+
+Operations
+
+HLT (halt) = (opcode) 00000 (remaining bits are undefined for now)
+
+MOV (move value at adress into register) = (opcode) 00001 (register) xxxx (address)
+
+ADD = (opcode) 00010 (register 1, where result is stored) xxxx (register 2) xxxx (remaining bits are undefined for now) -> register1 = register1 + register2
+
+CMP (compare) = (opcode) 00011 (register1) xxxx (register2) xxxx (remaining bits are undefined for now)
+
+JMP (jump) = (opcode) 00100 (address) (remaining bits are undefined for now)
+
+SUB (subtract) = (opcode) 00101 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> register1 = register1 - register2
+
+LEA (load effective address) = (opcode) 00110 (register) xxxx (address)
+
+STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxx (address)
+
+BITSHFTR (bit shift right 1) = (opcode) 01000 (register) xxxx (remaining bits are undefined for now)
+
+BITSHFTL (bit shift left 1) = (opcode) 01001 (register) xxxx (remaining bits are undefined for now)
+
+AND (bitwise and) = (opcode) 01010 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> result is stored in register1
+
+XOR (bitiwse xor) = (opcode) 01011 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+
+OR (bitwise or) = (opcode) 01100 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+
+NOT (bitwise not) = (opcode) 01101 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+
+Register Information
+
+*Note: The following register purposes are just conventions based on real computers. In reality
+       these registers can be used in any way you would like. 
+
+rax = accumulator register (used for storing intermediate results of arithmetic and logical operations) = 0000
+
+rbx = base register (used for storing memory addresses) = 0001
+
+rcx = program counter register (holds the memory address of the next instruction to be executed) = 0010
+
+rdx = data register (store and manipulate data with this register) = 0011
+
+rsi = source index register (useful for storing memory address of source array) = 0100
+
+rdi = destination index register (useful for storing memory adddress of desitnation or target array) = 0101
+
+rbp = base pointer register (points to the base of the stack (memory)) = 0110
+
+rsp = stack pointer register (points to memory address of last item pushed onto stack) = 0111
+
+The Next 8 registers are general purpose. Use them any way you'd like.
+
+r1 = 1000
+
+r2 = 1001
+
+r3 = 1010
+
+r4 = 1011
+
+r5 = 1100
+
+r6 = 1101
+
+r7 = 1110
+
+r8 = 1111
+
+
+
