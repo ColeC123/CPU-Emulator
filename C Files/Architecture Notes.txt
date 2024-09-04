@@ -34,8 +34,8 @@ NOT (bitwise not) = (opcode) 01101 (register1) xxxx (register2) xxxx (remaining 
 
 Register Information
 
-*Note: The following register purposes are just conventions based on real computers. In reality
-       these registers can be used in any way you would like. 
+*Note: The following register purposes are conventions based on real computers. They have predefined
+purposes, but can in general be used with any of the operations pertaining to the registers.
 
 rax = accumulator register (used for storing intermediate results of arithmetic and logical operations) = 0000
 
@@ -53,7 +53,7 @@ rbp = base pointer register (points to the base of the stack (memory)) = 0110
 
 rsp = stack pointer register (points to memory address of last item pushed onto stack) = 0111
 
-The Next 8 registers are general purpose. Use them any way you'd like.
+The Next 8 registers are general purpose. Use them any way you'd like. (This is subject to change possibly)
 
 r1 = 1000
 
