@@ -1,6 +1,6 @@
 First 5 bits detail the opcode (operation code / instruction code)
-registers are 4 bits
-addresses are 23 bits
+registers are 5 bits
+addresses are 22 bits
 
 Operations
 
@@ -16,7 +16,8 @@ JMP (jump) = (opcode) 00100 (address) (remaining bits are undefined for now)
 
 SUB (subtract) = (opcode) 00101 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> register1 = register1 - register2
 
-LEA (load effective address) = (opcode) 00110 (register) xxxx (address)
+LEA (load effective address) = (opcode) 00110 (register) xxxx (moves the specified address into the specified register. The effective address part refers to the fact that this is the absolute position in memory.)
+*Note: LEA can be used to move values directly into specific registers from the code if you do not want to first grab data from memory. 
 
 STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxx (address)
 
@@ -37,39 +38,41 @@ Register Information
 *Note: The following register purposes are conventions based on real computers. They have predefined
 purposes, but can in general be used with any of the operations pertaining to the registers.
 
-rax = accumulator register (used for storing intermediate results of arithmetic and logical operations) = 0000
+rax = accumulator register (used for storing intermediate results of arithmetic and logical operations) = 00000
 
-rbx = base register (used for storing memory addresses) = 0001
+rbx = base register (used for storing memory address of first location of data in program. You can then access data relative to the base register) = 00001
 
-rcx = program counter register (holds the memory address of the next instruction to be executed) = 0010
+rcx = program counter register (can be used a counter or to hold intermediate value during calculation) = 00010
 
-rdx = data register (store and manipulate data with this register) = 0011
+rdx = data register (store and manipulate data with this register) = 00011
 
-rsi = source index register (useful for storing memory address of source array) = 0100
+rsi = source index register (useful for storing memory address of source array) = 00100
 
-rdi = destination index register (useful for storing memory adddress of desitnation or target array) = 0101
+rdi = destination index register (useful for storing memory adddress of desitnation or target array) = 00101
 
-rbp = base pointer register (points to the base of the stack (memory)) = 0110
+rbp = base pointer register (points to the base of the stack (memory)) = 00110
 
-rsp = stack pointer register (points to memory address of last item pushed onto stack) = 0111
+rsp = stack pointer register (points to memory address of last item pushed onto stack) = 00111
 
 The Next 8 registers are general purpose. Use them any way you'd like. (This is subject to change possibly)
 
-r1 = 1000
+r1 = 01000
 
-r2 = 1001
+r2 = 01001
 
-r3 = 1010
+r3 = 01010
 
-r4 = 1011
+r4 = 01011
 
-r5 = 1100
+r5 = 01100
 
-r6 = 1101
+r6 = 01101
 
-r7 = 1110
+r7 = 01110
 
-r8 = 1111
+r8 = 01111
+
+rip = 10000 = instruction pointer (stores the next instruction to be executed. Can also be used for relative addressing. Should not be modified directly)
 
 
 

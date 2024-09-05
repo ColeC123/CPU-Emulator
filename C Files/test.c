@@ -12,27 +12,31 @@ static const int max_file_string_length = 4000;
 // See Architecture Notes for more details about instruction set
 
 // For now all of the registers will just be initialized to 0 at the start of the program
-static int registers[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static int registers[17] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+//keeps track of current 
+static int program_counter = 0;
 
 #define MAX_FILE_LINE_READ 70
 
 enum register_names {
-    rax = 0b0000,
-    rbx = 0b0001,
-    rcx = 0b0010,
-    rdx = 0b0011,
-    rsi = 0b0100,
-    rdi = 0b0101,
-    rbp = 0b0110,
-    rsp = 0b0111,
-    r1 = 0b1000,
-    r2 = 0b1001,
-    r3 = 0b1010,
-    r4 = 0b1011,
-    r5 = 0b1100,
-    r6 = 0b1101,
-    r7 = 0b1110,
-    r8 = 0b1111,
+    rax = 0b00000,
+    rbx = 0b00001,
+    rcx = 0b00010,
+    rdx = 0b00011,
+    rsi = 0b00100,
+    rdi = 0b00101,
+    rbp = 0b00110,
+    rsp = 0b00111,
+    r1 = 0b01000,
+    r2 = 0b01001,
+    r3 = 0b01010,
+    r4 = 0b01011,
+    r5 = 0b01100,
+    r6 = 0b01101,
+    r7 = 0b01110,
+    r8 = 0b01111,
+    rip = 0b10000,
 };
 
 int BinaryStringToInt(char* string, int start, int length);
@@ -58,14 +62,15 @@ int main(void) {
     bool running = true;
 
     // unsigned int makes for more consistent bit shifting behavior
-    unsigned int ram_value = 0;
+    unsigned int instruction = 0;
     while (running) {
-        ram_value = RAM[registers[rcx]];
+        instruction = RAM[program_counter];
+        registers[rip]++;
 
-        binarynum = IntToBinaryString(binarynum, ram_value >> 27);
+        binarynum = IntToBinaryString(binarynum, instruction >> 27);
         printf("opcode: %s\n", binarynum);
 
-        switch (ram_value >> 27) {
+        switch (instruction >> 27) {
             case 0b00000:
                 printf("HLT Instruction");
                 running = false;
@@ -73,12 +78,12 @@ int main(void) {
 
             case 0b00001:
                 printf("MOV Instruction");
-                registers[(ram_value << 5) >> 28] = RAM[(ram_value << 9) >> 9];
+                registers[(instruction << 5) >> 27] = RAM[(instruction << 10) >> 10];
                 break;
 
             case 0b00010:
                 printf("ADD Instruction");
-                registers[(ram_value << 5) >> 28] += registers[(ram_value << 9) >> 28];
+                registers[(instruction << 5) >> 27] += registers[(instruction << 10) >> 27];
                 break;
 
             case 0b00011:
@@ -87,19 +92,17 @@ int main(void) {
 
             case 0b00100:
                 printf("JMP Instruction");
-                // Gets rid of top 5 bits (opcode), and then shifts to the left 9 bits
-                // in order to get the correct address size
-                //-1 accounts for the fact that rcx automatically increments by one
-                registers[rcx] = ((RAM[registers[rcx]] << 5) >> 9) - 1;
+                registers[rip] = ((instruction << 5) >> 10);
                 break;
 
             case 0b00101:
                 printf("SUB Instruction");
-                registers[(ram_value << 5) >> 28] -= registers[(ram_value << 9) >> 28];
+                registers[(instruction << 5) >> 27] -= registers[(instruction << 10) >> 27];
                 break;
 
             case 0b00110:
                 printf("LEA Instruction");
+                registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
                 break;
 
             case 0b00111:
@@ -136,7 +139,7 @@ int main(void) {
         }
 
         printf("\n\n");
-        registers[rcx]++;
+        program_counter = registers[rip];
     }
 
     free(RAM);
@@ -180,6 +183,8 @@ void ArgumentInputs(void) {
 
     char PATH[257];
     int PATH_size = 0;
+
+    //This is the logic for getting the PATH or directory to the textfile
     for (int i = file_path_index; args[i] != '"' && (i - file_path_index) < 256 && i < arg_size; i++) {
         PATH[i - file_path_index] = args[i];
         PATH_size++;
@@ -194,6 +199,8 @@ void ArgumentInputs(void) {
 
     char readas_type[16];  // size is 16 to allow for wiggle room later on when naming more readas types
     int readas_type_size = 0;
+
+    //This is the logic for getting the readas_type string from the arguments
     for (int i = readas_index; args[i] != '"' && (i - readas_index) < 16 && i < arg_size; i++) {
         readas_type[i - readas_index] = args[i];
         readas_type_size++;
@@ -220,12 +227,16 @@ void ArgumentInputs(void) {
     while (fgets(mystring, MAX_FILE_LINE_READ, fptr)) {
         int count = 0;
         while (mystring[count] != '\0' && file_string_logical_size < max_file_string_length) {
+            //The logic for semicolon comments
             if (mystring[count] == ';') {
                 semicolon_present = true;
             } else if (mystring[count] == '\n') {
                 semicolon_present = false;
             }
 
+            //Spaces are removed while moving through the file because it is more efficient than copying the entire file and then removing them
+            //semicolon bool is needed because fgets will move through the entire file no matter how small MAX_FILE_LINE_READ is (within reason)
+            //fgets sort of reads through the file in chunks
             if (mystring[count] != ' ' && semicolon_present == false) {
                 file_string[file_string_logical_size] = mystring[count];
                 file_string_logical_size++;
@@ -239,6 +250,7 @@ void ArgumentInputs(void) {
     // null terminator used to mark the ending point of the file
     file_string[file_string_logical_size] = '\0';
 
+    //The rest of this function loads the textfile into memory
     int curr_file_search_count = 0;
     int past_file_search_count = 0;
     int ram_position_count = 0;
@@ -297,6 +309,8 @@ int IntMin(int arg1, int arg2) {
 }
 
 // Unitialized strings should be set to NULL when using this function
+//Unkown string sizes call for heap allocated memroy, don't forget to free it
+//Use function like: char* str = IntToBinaryString(str, 19);
 char* IntToBinaryString(char* str, int input) {
     // input is converted to unsigned int since my logic relies on the fact that bit shifting to the left
     // fills in the new binary spaces with 0s instead of 1s as happens for negative signed integers
