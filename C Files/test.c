@@ -7,7 +7,7 @@ static const int RAM_SIZE = 4096;
 int* RAM;
 
 // Arbitrary file size limit, could be much larger
-static const int max_file_string_length = 4000;
+#define max_file_string_length 5000
 
 // See Architecture Notes for more details about instruction set
 
@@ -107,10 +107,14 @@ int main(void) {
 
             case 0b00111:
                 printf("STORE Instruction");
+                RAM[(instruction << 10) >> 10] = registers[(instruction << 5) >> 27];
                 break;
 
             case 0b01000:
-                printf("BITSHFTR Instruction");
+                printf("LBITSHFTR Instruction");
+                //instruction is already an unsigned integer
+                unsigned int result_register = (instruction << 5) >> 27;
+                registers[result_register] = registers[result_register] >> (registers[(instruction << 10) >> 27]);
                 break;
 
             case 0b01001:
@@ -131,6 +135,11 @@ int main(void) {
 
             case 0b01101:
                 printf("NOT Instruction");
+                break;
+
+            case 0b01110:
+                printf("EQU Instruction");
+                registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
                 break;
 
             default:

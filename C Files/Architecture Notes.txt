@@ -6,32 +6,35 @@ Operations
 
 HLT (halt) = (opcode) 00000 (remaining bits are undefined for now)
 
-MOV (move value at adress into register) = (opcode) 00001 (register) xxxx (address)
+MOV (move value at adress into register) = (opcode) 00001 (register) xxxxx (address)
 
-ADD = (opcode) 00010 (register 1, where result is stored) xxxx (register 2) xxxx (remaining bits are undefined for now) -> register1 = register1 + register2
+ADD = (opcode) 00010 (register 1, where result is stored) xxxxx (register 2) xxxxx (remaining bits are undefined for now) -> register1 = register1 + register2
 
-CMP (compare) = (opcode) 00011 (register1) xxxx (register2) xxxx (remaining bits are undefined for now)
+CMP (compare) = (opcode) 00011 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
 
 JMP (jump) = (opcode) 00100 (address) (remaining bits are undefined for now)
 
-SUB (subtract) = (opcode) 00101 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> register1 = register1 - register2
+SUB (subtract) = (opcode) 00101 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register1 - register2
 
-LEA (load effective address) = (opcode) 00110 (register) xxxx (moves the specified address into the specified register. The effective address part refers to the fact that this is the absolute position in memory.)
+LEA (load effective address) = (opcode) 00110 (register) xxxxx (moves the specified address into the specified register. The effective address part refers to the fact that this is the absolute position in memory.)
 *Note: LEA can be used to move values directly into specific registers from the code if you do not want to first grab data from memory. 
 
-STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxx (address)
+STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxxx (address)
 
-BITSHFTR (bit shift right 1) = (opcode) 01000 (register) xxxx (remaining bits are undefined for now)
+LBITSHFTR (logical bit shift right 1, meaning right is filled with 0s) = (opcode) 01000 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
+*Note: register1 = register1 = register1 >> register2 (register1 is bitshifted right the number of times of the value in register2, and the result in stored in register1)
 
-BITSHFTL (bit shift left 1) = (opcode) 01001 (register) xxxx (remaining bits are undefined for now)
+BITSHFTL (bit shift left 1) = (opcode) 01001 (register) xxxxxx (register) xxxxxx (remaining bits are undefined for now)
 
-AND (bitwise and) = (opcode) 01010 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> result is stored in register1
+AND (bitwise and) = (opcode) 01010 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> result is stored in register1
 
-XOR (bitiwse xor) = (opcode) 01011 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+XOR (bitiwse xor) = (opcode) 01011 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
 
-OR (bitwise or) = (opcode) 01100 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+OR (bitwise or) = (opcode) 01100 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
 
-NOT (bitwise not) = (opcode) 01101 (register1) xxxx (register2) xxxx (remaining bits are undefined for now) -> results is stored in register1
+NOT (bitwise not) = (opcode) 01101 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
+
+EQU (equals) = (opcode) 01110 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register2 (value in register1 set to value in register2)
 
 Register Information
 
