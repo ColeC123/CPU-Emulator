@@ -1,16 +1,21 @@
-00001   01000 0000000000000000100001           ; MOV value at address 33 into r1
+00001   01000 0000000000000000100101           ; MOV value at address 37 into r1
 00010   01000 00010 00000000000000000          ; ADD r1 to rcx and store result in r1
 00001   01001 0000000000000000100010           ; MOV value at address 34 into r2
-00100   0000000000000000000101   00000         ; JMP to address 10
+01110   10000 01000 00000000000000000          ; JMP to address 5 by setting rip register to that address using LEA
 ;
 00101   01000 01001 00000000000000000          ; SUB: r1 = r1 - r2
 00001   00001 0000000000000000100001           ; MOV value at 33 into rbx. This is the address of the first data of the program. rbx can now be used for relative addressing of data.
-00110   01010 0000000000000000000011           ; LEA: Am using lea to put the value 3 into r3
-00110   01011 0000000000000000010100           ; LEA: Am using lea to put the value of 20 into r4
+00001   01010 0000000000000000100011           ; MOV value at address 35 into r3
+00001   01011 0000000000000000100100           ; MOV value at address 36 into r4
 00111   01011 0000000000000000100001           ; STORE value in r4 at memory address 33  
 00001   01100 0000000000000000100001           ; MOV value at 33 into r5
 01110   01100 01011 00000000000000000          ; EQU : value in r5 is set equal to value in r4
 01000   01100 01010 00000000000000000          ; LBITSHFTR: value in r5 is shifted to the right by the value in r3
+01001   01100 01010 00000000000000000          ; BITSHFTL: value in r5 is shifted to the left by the value in r3
+01010   01100 01011 00000000000000000          ; AND: value in r5 undergoes bitwise and with value in r4
+01011   01100 01010 00000000000000000          ; XOR: value in r5 undergoes bitwise xor with value in r3
+01100   01100 01011 00000000000000000          ; OR: value in r5 undergoes bitwise or with value in r4
+01101   01100 01100 00000000000000000          ; NOT: value in r5 equals inverted bits of value in r5
 ;
 ;
 ;
@@ -24,12 +29,10 @@
 ;
 ;
 ;
-;
-;
-;
-;
-;
-; This space above is to make room for possible new code. Also helps prevent data and instructions from mixing.
+; The space above is to make room for possible new code. Also helps prevent data and instructions from mixing.
 00000   000000000000000000000000000         ; HLT program
 00000   000000000000000000000011111         ; Stores the value of 31
 00000   000000000000000000000010000         ; Stores the value of 16
+00000   000000000000000000000000011         ; Stores the value of 3
+00000   000000000000000000000010100         ; Stores the value of 20
+00000   000000000000000000000000101         ; Stores the value of 5

@@ -14,7 +14,11 @@ int* RAM;
 // For now all of the registers will just be initialized to 0 at the start of the program
 static int registers[17] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-//keeps track of current 
+static int ZF_Flag = 0; //zero result flag
+static int PI_Flag = 0; //positive int result flag
+static int NI_Flag = 0; //negative int result flag
+
+// keeps track of current
 static int program_counter = 0;
 
 #define MAX_FILE_LINE_READ 70
@@ -88,11 +92,68 @@ int main(void) {
 
             case 0b00011:
                 printf("CMP Instruction");
+                int comparison_result = registers[(instruction << 5) >> 27] - registers[(instruction << 10) >> 27];
+
+                if (comparison_result == 0) {
+                    ZF_Flag = 1;
+                } else {
+                    ZF_Flag = 0;
+                }
+                
+                if (comparison_result > 0) {
+                    PI_Flag = 1;
+                } else {
+                    PI_Flag = 0;
+                }
+                
+                if (comparison_result < 0) {
+                    NI_Flag = 1;
+                } else {
+                    NI_Flag = 0;
+                }
+
                 break;
 
             case 0b00100:
-                printf("JMP Instruction");
-                registers[rip] = ((instruction << 5) >> 10);
+                printf("JMPIF Instruction");
+                int jump_condition = (instruction << 5) >> 27;
+                switch (jump_condition) {
+                    case 0b00000:
+                        if (ZF_Flag == 1) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+                    
+                    case 0b00001:
+                        if (ZF_Flag == 0) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+                    
+                    case 0b00010:
+                        if (NI_Flag == 1) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+
+                    case 0b00011:
+                        if (PI_Flag == 1) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+
+                    case 0b00100:
+                        if (NI_Flag == 1 || ZF_Flag == 1) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+                    
+                    case 0b00101:
+                        if (PI_Flag == 1 || ZF_Flag == 1) {
+                            registers[rip] = (instruction << 10) >> 10;
+                        }
+                        break;
+                }
                 break;
 
             case 0b00101:
@@ -101,8 +162,7 @@ int main(void) {
                 break;
 
             case 0b00110:
-                printf("LEA Instruction");
-                registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
+                printf("No assigned instruction right now");
                 break;
 
             case 0b00111:
@@ -112,29 +172,35 @@ int main(void) {
 
             case 0b01000:
                 printf("LBITSHFTR Instruction");
-                //instruction is already an unsigned integer
-                unsigned int result_register = (instruction << 5) >> 27;
-                registers[result_register] = registers[result_register] >> (registers[(instruction << 10) >> 27]);
+                // instruction is already an unsigned integer
+                // This gives consistent behavior for bit shifting right (left is filled with 0s always)
+                registers[(instruction << 5) >> 27] >>= (registers[(instruction << 10) >> 27]);
                 break;
 
             case 0b01001:
                 printf("BITSHFTL Instruction");
+                // instruction is already an unsigned integer, giving it consistent bit shifting behavior
+                registers[(instruction << 5) >> 27]  <<= (registers[(instruction << 10) >> 27]);
                 break;
 
             case 0b01010:
                 printf("AND Instruction");
+                registers[(instruction << 5) >> 27] &= registers[(instruction << 10) >> 27];
                 break;
 
             case 0b01011:
                 printf("XOR Instruction");
+                registers[(instruction << 5) >> 27] ^= registers[(instruction << 10) >> 27];
                 break;
 
             case 0b01100:
                 printf("OR Instruction");
+                registers[(instruction << 5) >> 27] |= registers[(instruction << 10) >> 27];
                 break;
 
             case 0b01101:
                 printf("NOT Instruction");
+                registers[(instruction << 5) >> 27] = ~registers[(instruction << 10) >> 27];
                 break;
 
             case 0b01110:
@@ -168,11 +234,11 @@ int main(void) {
 }
 
 int BinaryStringToInt(char* string, int start, int length) {
-    int retval = 0;
+    unsigned int retval = 0;
     for (int i = start; i < start + length; i++) {
-        retval += ((int)string[i] - 48) << (length - (i - start) - 1);
+        retval += ((unsigned int)string[i] - 48) << (length - (i - start) - 1);
     }
-    return retval;
+    return (int)retval;
 }
 
 void ArgumentInputs(void) {
@@ -193,7 +259,7 @@ void ArgumentInputs(void) {
     char PATH[257];
     int PATH_size = 0;
 
-    //This is the logic for getting the PATH or directory to the textfile
+    // This is the logic for getting the PATH or directory to the textfile
     for (int i = file_path_index; args[i] != '"' && (i - file_path_index) < 256 && i < arg_size; i++) {
         PATH[i - file_path_index] = args[i];
         PATH_size++;
@@ -209,7 +275,7 @@ void ArgumentInputs(void) {
     char readas_type[16];  // size is 16 to allow for wiggle room later on when naming more readas types
     int readas_type_size = 0;
 
-    //This is the logic for getting the readas_type string from the arguments
+    // This is the logic for getting the readas_type string from the arguments
     for (int i = readas_index; args[i] != '"' && (i - readas_index) < 16 && i < arg_size; i++) {
         readas_type[i - readas_index] = args[i];
         readas_type_size++;
@@ -236,16 +302,16 @@ void ArgumentInputs(void) {
     while (fgets(mystring, MAX_FILE_LINE_READ, fptr)) {
         int count = 0;
         while (mystring[count] != '\0' && file_string_logical_size < max_file_string_length) {
-            //The logic for semicolon comments
+            // The logic for semicolon comments
             if (mystring[count] == ';') {
                 semicolon_present = true;
             } else if (mystring[count] == '\n') {
                 semicolon_present = false;
             }
 
-            //Spaces are removed while moving through the file because it is more efficient than copying the entire file and then removing them
-            //semicolon bool is needed because fgets will move through the entire file no matter how small MAX_FILE_LINE_READ is (within reason)
-            //fgets sort of reads through the file in chunks
+            // Spaces are removed while moving through the file because it is more efficient than copying the entire file and then removing them
+            // semicolon bool is needed because fgets will move through the entire file no matter how small MAX_FILE_LINE_READ is (within reason)
+            // fgets sort of reads through the file in chunks
             if (mystring[count] != ' ' && semicolon_present == false) {
                 file_string[file_string_logical_size] = mystring[count];
                 file_string_logical_size++;
@@ -259,7 +325,7 @@ void ArgumentInputs(void) {
     // null terminator used to mark the ending point of the file
     file_string[file_string_logical_size] = '\0';
 
-    //The rest of this function loads the textfile into memory
+    // The rest of this function loads the textfile into memory
     int curr_file_search_count = 0;
     int past_file_search_count = 0;
     int ram_position_count = 0;
@@ -318,8 +384,8 @@ int IntMin(int arg1, int arg2) {
 }
 
 // Unitialized strings should be set to NULL when using this function
-//Unkown string sizes call for heap allocated memroy, don't forget to free it
-//Use function like: char* str = IntToBinaryString(str, 19);
+// Unkown string sizes call for heap allocated memroy, don't forget to free it
+// Use function like: char* str = IntToBinaryString(str, 19);
 char* IntToBinaryString(char* str, int input) {
     // input is converted to unsigned int since my logic relies on the fact that bit shifting to the left
     // fills in the new binary spaces with 0s instead of 1s as happens for negative signed integers

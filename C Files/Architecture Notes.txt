@@ -11,20 +11,27 @@ MOV (move value at adress into register) = (opcode) 00001 (register) xxxxx (addr
 ADD = (opcode) 00010 (register 1, where result is stored) xxxxx (register 2) xxxxx (remaining bits are undefined for now) -> register1 = register1 + register2
 
 CMP (compare) = (opcode) 00011 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
+*Note: CPU flags will be set based on the result of the comparison (these flags are not accessible)
 
-JMP (jump) = (opcode) 00100 (address) (remaining bits are undefined for now)
+JMPIF (jump if) = (opcode) 00100 (condition) xxxxx (address, 22 bits)
+Conditions for jumping:
+    -00000 = jump if equal
+    -00001 = jump if not equal
+    -00010 = jump if less than
+    -00011 = jump if greater than
+    -00100 = jump if less than or equal
+    -00101 = jump if greater than or equal
 
 SUB (subtract) = (opcode) 00101 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register1 - register2
 
-LEA (load effective address) = (opcode) 00110 (register) xxxxx (moves the specified address into the specified register. The effective address part refers to the fact that this is the absolute position in memory.)
-*Note: LEA can be used to move values directly into specific registers from the code if you do not want to first grab data from memory. 
+00110 = (open spot for instruction)
 
 STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxxx (address)
 
 LBITSHFTR (logical bit shift right 1, meaning right is filled with 0s) = (opcode) 01000 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
 *Note: register1 = register1 = register1 >> register2 (register1 is bitshifted right the number of times of the value in register2, and the result in stored in register1)
 
-BITSHFTL (bit shift left 1) = (opcode) 01001 (register) xxxxxx (register) xxxxxx (remaining bits are undefined for now)
+BITSHFTL (bit shift left 1) = (opcode) 01001 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> register1 = register1 << register2
 
 AND (bitwise and) = (opcode) 01010 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> result is stored in register1
 
@@ -35,6 +42,10 @@ OR (bitwise or) = (opcode) 01100 (register1) xxxxxx (register2) xxxxxx (remainin
 NOT (bitwise not) = (opcode) 01101 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
 
 EQU (equals) = (opcode) 01110 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register2 (value in register1 set to value in register2)
+
+*JMP is a unique instruction, since the rip register (instruction pointer) can be modified directly. 
+In ordder to jump to a specific address do EQU rip, register. This moves the address to be jumped to directly into the rip register.
+In binary this looks like: (equ opcode) 01110 (rip register) 10000 (register) xxxxx
 
 Register Information
 
