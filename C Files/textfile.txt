@@ -1,7 +1,7 @@
 00001   01000 0000000000000000100101           ; MOV value at address 37 into r1
 00010   01000 00010 00000000000000000          ; ADD r1 to rcx and store result in r1
 00001   01001 0000000000000000100010           ; MOV value at address 34 into r2
-01110   10000 01000 00000000000000000          ; JMP to address 5 by setting rip register to that address using LEA
+01110   10000 01000 00000000000000000          ; EQU: jump to address 5 by setting rip register to that address using EQU
 ;
 00101   01000 01001 00000000000000000          ; SUB: r1 = r1 - r2
 00001   00001 0000000000000000100001           ; MOV value at 33 into rbx. This is the address of the first data of the program. rbx can now be used for relative addressing of data.
@@ -16,11 +16,11 @@
 01011   01100 01010 00000000000000000          ; XOR: value in r5 undergoes bitwise xor with value in r3
 01100   01100 01011 00000000000000000          ; OR: value in r5 undergoes bitwise or with value in r4
 01101   01100 01100 00000000000000000          ; NOT: value in r5 equals inverted bits of value in r5
-;
-;
-;
-;
-;
+00001   01101 0000000000000000100100           ; MOV value at address 36 into r6
+00011   01011 01101 00000000000000000          ; CMP value in r6 to r4
+00100   00000 0000000000000000010110           ; JMPIF jump to address 22 if equal
+00001   10000 0000000000000000100110           ; MOV: jump to address 23 by setting value in rip register to 23
+01110   01110 01000 00000000000000000          ; EQU: set value in r7 equal to value in r1 
 ;
 ;
 ;
@@ -36,3 +36,4 @@
 00000   000000000000000000000000011         ; Stores the value of 3
 00000   000000000000000000000010100         ; Stores the value of 20
 00000   000000000000000000000000101         ; Stores the value of 5
+00000   000000000000000000000010111         ; Stores the value of 23
