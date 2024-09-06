@@ -24,22 +24,31 @@ Conditions for jumping:
 
 SUB (subtract) = (opcode) 00101 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register1 - register2
 
-00110 = (open spot for instruction)
+PUSH/POP = (opcode) 00110 (push = 0 or pop = 1) x (register) xxxxx
+*Note: When using push and pop you should make sure you have initially set rbp and rsp equal to each other.
+       You should also ensure that the starting address for rbp and rsp is sufficiently far away from instructions in memory
+       This is because the stack grows downwards (rsp is decremented), and a stack overflow is likely to cause corruption of data and possibly instructions
+push:
+- current value of register placed in memory at rsp's location
+- rsp decremented by one
+pop:
+- current value at memory address in rsp in placed into the register
+- rsp is incremented by one
 
 STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxxx (address)
 
 LBITSHFTR (logical bit shift right 1, meaning right is filled with 0s) = (opcode) 01000 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
 *Note: register1 = register1 = register1 >> register2 (register1 is bitshifted right the number of times of the value in register2, and the result in stored in register1)
 
-BITSHFTL (bit shift left 1) = (opcode) 01001 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> register1 = register1 << register2
+BITSHFTL (bit shift left 1) = (opcode) 01001 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register1 << register2
 
-AND (bitwise and) = (opcode) 01010 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> result is stored in register1
+AND (bitwise and) = (opcode) 01010 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> result is stored in register1
 
-XOR (bitiwse xor) = (opcode) 01011 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
+XOR (bitiwse xor) = (opcode) 01011 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> results is stored in register1
 
-OR (bitwise or) = (opcode) 01100 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
+OR (bitwise or) = (opcode) 01100 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> results is stored in register1
 
-NOT (bitwise not) = (opcode) 01101 (register1) xxxxxx (register2) xxxxxx (remaining bits are undefined for now) -> results is stored in register1
+NOT (bitwise not) = (opcode) 01101 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> results is stored in register1
 
 EQU (equals) = (opcode) 01110 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now) -> register1 = register2 (value in register1 set to value in register2)
 

@@ -162,7 +162,7 @@ int main(void) {
                 break;
 
             case 0b00110:
-                printf("No assigned instruction right now");
+                printf("PUSH/POP");
                 break;
 
             case 0b00111:
