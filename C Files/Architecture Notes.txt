@@ -13,7 +13,7 @@ ADD = (opcode) 00010 (register 1, where result is stored) xxxxx (register 2) xxx
 CMP (compare) = (opcode) 00011 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
 *Note: CPU flags will be set based on the result of the comparison (these flags are not accessible)
 
-JMPIF (jump if) = (opcode) 00100 (condition) xxxxx (address, 22 bits)
+JMPIF (jump if) = (opcode) 00100 (condition) xxxxx (register) xxxxx
 Conditions for jumping:
     -00000 = jump if equal
     -00001 = jump if not equal

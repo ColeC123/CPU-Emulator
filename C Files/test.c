@@ -121,37 +121,37 @@ int main(void) {
                     switch (jump_condition) {
                         case 0b00000:
                             if (ZF_Flag == 1) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
 
                         case 0b00001:
                             if (ZF_Flag == 0) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
 
                         case 0b00010:
                             if (NI_Flag == 1) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
 
                         case 0b00011:
                             if (PI_Flag == 1) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
 
                         case 0b00100:
                             if (NI_Flag == 1 || ZF_Flag == 1) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
 
                         case 0b00101:
                             if (PI_Flag == 1 || ZF_Flag == 1) {
-                                registers[rip] = (instruction << 10) >> 10;
+                                registers[rip] = registers[(instruction << 10) >> 27];
                             }
                             break;
                     }
@@ -244,7 +244,6 @@ int main(void) {
                     printf("Opcode Identification Failure");
                     break;
             }
-
             printf("\n\n");
             program_counter = registers[rip];
         }
