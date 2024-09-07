@@ -4,7 +4,7 @@
 #include "string.h"
 // 23 bits for address value allows for 2^23 memory slots, I'm only going for 4096 (2^12) right now
 static const int RAM_SIZE = 4096;
-int* RAM;
+int *RAM;
 
 // Arbitrary file size limit, could be much larger
 #define max_file_string_length 5000
@@ -43,228 +43,241 @@ enum register_names {
     rip = 0b10000,
 };
 
-int BinaryStringToInt(char* string, int start, int length);
+int BinaryStringToInt(char *string, int start, int length);
 
 void ArgumentInputs(void);
 
-int strfind(char* searchfor, char* in, int searchfor_size, int in_size);
+int strfind(char *searchfor, char *in, int searchfor_size, int in_size);
 
-int HexStringToInt(char* string, int start, int length);
+int HexStringToInt(char *string, int start, int length);
 
 int IntMin(int arg1, int arg2);
 
-char* IntToBinaryString(char* str, int input, int padding);
+char *IntToBinaryString(char *str, int input, int padding);
 
 int main(void) {
-    RAM = (int*)malloc(RAM_SIZE * sizeof(int));
+    RAM = (int *)malloc(RAM_SIZE * sizeof(int));
 
-    char* binarynum = NULL;
-    char* binarynum2 = NULL;
+    char *binarynum = NULL;
+    char *binarynum2 = NULL;
 
-    ArgumentInputs();
+    while (true) {
+        ArgumentInputs();
 
-    bool running = true;
+        bool running = true;
 
-    // unsigned int makes for more consistent bit shifting behavior
-    unsigned int instruction = 0;
-    while (running) {
-        instruction = RAM[program_counter];
-        registers[rip]++;
+        // unsigned int makes for more consistent bit shifting behavior
+        unsigned int instruction = 0;
+        while (running) {
+            instruction = RAM[program_counter];
+            registers[rip]++;
 
-        binarynum = IntToBinaryString(binarynum, instruction >> 27, 32);
-        printf("opcode: %s\n", binarynum);
+            binarynum = IntToBinaryString(binarynum, instruction, 32);
+            printf("opcode: %s\n", binarynum);
 
-        switch (instruction >> 27) {
-            case 0b00000:
-                printf("HLT Instruction");
-                running = false;
-                break;
+            switch (instruction >> 27) {
+                case 0b00000:
+                    printf("HLT Instruction");
+                    running = false;
+                    break;
 
-            case 0b00001:
-                printf("MOV Instruction");
-                registers[(instruction << 5) >> 27] = RAM[(instruction << 10) >> 10];
-                break;
+                case 0b00001:
+                    printf("MOVA Instruction");
+                    registers[(instruction << 5) >> 27] = RAM[(instruction << 10) >> 10];
+                    break;
 
-            case 0b00010:
-                printf("ADD Instruction");
-                registers[(instruction << 5) >> 27] += registers[(instruction << 10) >> 27];
-                break;
+                case 0b00010:
+                    printf("ADD Instruction");
+                    registers[(instruction << 5) >> 27] += registers[(instruction << 10) >> 27];
+                    break;
 
-            case 0b00011:
-                printf("CMP Instruction");
-                int comparison_result = registers[(instruction << 5) >> 27] - registers[(instruction << 10) >> 27];
+                case 0b00011:
+                    printf("CMP Instruction");
+                    int comparison_result = registers[(instruction << 5) >> 27] - registers[(instruction << 10) >> 27];
 
-                if (comparison_result == 0) {
-                    ZF_Flag = 1;
-                } else {
-                    ZF_Flag = 0;
-                }
+                    if (comparison_result == 0) {
+                        ZF_Flag = 1;
+                    } else {
+                        ZF_Flag = 0;
+                    }
 
-                if (comparison_result > 0) {
-                    PI_Flag = 1;
-                } else {
-                    PI_Flag = 0;
-                }
+                    if (comparison_result > 0) {
+                        PI_Flag = 1;
+                    } else {
+                        PI_Flag = 0;
+                    }
 
-                if (comparison_result < 0) {
-                    NI_Flag = 1;
-                } else {
-                    NI_Flag = 0;
-                }
+                    if (comparison_result < 0) {
+                        NI_Flag = 1;
+                    } else {
+                        NI_Flag = 0;
+                    }
 
-                break;
+                    break;
 
-            case 0b00100:
-                printf("JMPIF Instruction");
-                int jump_condition = (instruction << 5) >> 27;
-                switch (jump_condition) {
-                    case 0b00000:
-                        if (ZF_Flag == 1) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
+                case 0b00100:
+                    printf("JMPIF Instruction");
+                    int jump_condition = (instruction << 5) >> 27;
+                    switch (jump_condition) {
+                        case 0b00000:
+                            if (ZF_Flag == 1) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
 
-                    case 0b00001:
-                        if (ZF_Flag == 0) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
+                        case 0b00001:
+                            if (ZF_Flag == 0) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
 
-                    case 0b00010:
-                        if (NI_Flag == 1) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
+                        case 0b00010:
+                            if (NI_Flag == 1) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
 
-                    case 0b00011:
-                        if (PI_Flag == 1) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
+                        case 0b00011:
+                            if (PI_Flag == 1) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
 
-                    case 0b00100:
-                        if (NI_Flag == 1 || ZF_Flag == 1) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
+                        case 0b00100:
+                            if (NI_Flag == 1 || ZF_Flag == 1) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
 
-                    case 0b00101:
-                        if (PI_Flag == 1 || ZF_Flag == 1) {
-                            registers[rip] = (instruction << 10) >> 10;
-                        }
-                        break;
-                }
-                break;
+                        case 0b00101:
+                            if (PI_Flag == 1 || ZF_Flag == 1) {
+                                registers[rip] = (instruction << 10) >> 10;
+                            }
+                            break;
+                    }
+                    break;
 
-            case 0b00101:
-                printf("SUB Instruction");
-                registers[(instruction << 5) >> 27] -= registers[(instruction << 10) >> 27];
-                break;
+                case 0b00101:
+                    printf("SUB Instruction");
+                    registers[(instruction << 5) >> 27] -= registers[(instruction << 10) >> 27];
+                    break;
 
-            case 0b00110:
-                printf("PUSH/POP");
-                if ((instruction << 5) >> 31 == 0) {
+                case 0b00110:
+                    printf("PUSH/POP");
+                    if ((instruction << 5) >> 31 == 0) {
+                        registers[rsp]--;
+                        RAM[registers[rsp]] = registers[(instruction << 6) >> 27];
+                    } else {
+                        registers[(instruction << 6) >> 27] = RAM[registers[rsp]];
+                        registers[rsp]++;
+                    }
+                    break;
+
+                case 0b00111:
+                    printf("STORE Instruction");
+                    RAM[(instruction << 10) >> 10] = registers[(instruction << 5) >> 27];
+                    break;
+
+                case 0b01000:
+                    printf("LBITSHFTR Instruction");
+                    // instruction is already an unsigned integer
+                    // This gives consistent behavior for bit shifting right (left is filled with 0s always)
+                    registers[(instruction << 5) >> 27] >>= (registers[(instruction << 10) >> 27]);
+                    break;
+
+                case 0b01001:
+                    printf("BITSHFTL Instruction");
+                    // instruction is already an unsigned integer, giving it consistent bit shifting behavior
+                    registers[(instruction << 5) >> 27] <<= (registers[(instruction << 10) >> 27]);
+                    break;
+
+                case 0b01010:
+                    printf("AND Instruction");
+                    registers[(instruction << 5) >> 27] &= registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b01011:
+                    printf("XOR Instruction");
+                    registers[(instruction << 5) >> 27] ^= registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b01100:
+                    printf("OR Instruction");
+                    registers[(instruction << 5) >> 27] |= registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b01101:
+                    printf("NOT Instruction");
+                    registers[(instruction << 5) >> 27] = ~registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b01110:
+                    printf("EQU Instruction");
+                    registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b10000:
+                    printf("IMUL Instruction");
+                    registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b10001:
+                    printf("IDIV Instruction");
+                    registers[(instruction << 5) >> 27] /= registers[(instruction << 10) >> 27];
+                    break;
+
+                case 0b10010:
+                    printf("CALL Instruction");
+                    // Push return address to stack
                     registers[rsp]--;
-                    RAM[registers[rsp]] = registers[(instruction << 6) >> 27];
-                } else {
-                    registers[(instruction << 6) >> 27] = RAM[registers[rsp]];
-                    registers[rsp]++;
-                }
-                break;
+                    RAM[registers[rsp]] = registers[rip];
+                    // set rip to address of function
+                    registers[rip] = (instruction << 5) >> 10;
+                    break;
 
-            case 0b00111:
-                printf("STORE Instruction");
-                RAM[(instruction << 10) >> 10] = registers[(instruction << 5) >> 27];
-                break;
+                case 0b10011:
+                    printf("SETREG Instruction");
+                    registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
+                    break;
 
-            case 0b01000:
-                printf("LBITSHFTR Instruction");
-                // instruction is already an unsigned integer
-                // This gives consistent behavior for bit shifting right (left is filled with 0s always)
-                registers[(instruction << 5) >> 27] >>= (registers[(instruction << 10) >> 27]);
-                break;
+                default:
+                    printf("Opcode Identification Failure");
+                    break;
+            }
 
-            case 0b01001:
-                printf("BITSHFTL Instruction");
-                // instruction is already an unsigned integer, giving it consistent bit shifting behavior
-                registers[(instruction << 5) >> 27] <<= (registers[(instruction << 10) >> 27]);
-                break;
-
-            case 0b01010:
-                printf("AND Instruction");
-                registers[(instruction << 5) >> 27] &= registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b01011:
-                printf("XOR Instruction");
-                registers[(instruction << 5) >> 27] ^= registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b01100:
-                printf("OR Instruction");
-                registers[(instruction << 5) >> 27] |= registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b01101:
-                printf("NOT Instruction");
-                registers[(instruction << 5) >> 27] = ~registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b01110:
-                printf("EQU Instruction");
-                registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b10000:
-                printf("IMUL Instruction");
-                registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b10001:
-                printf("IDIV Instruction");
-                registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
-                break;
-
-            case 0b10010:
-                printf("CALL Instruction");
-                //Push return address to stack
-                registers[rsp]--;
-                RAM[registers[rsp]] = registers[rip];
-                //set rip to address of function
-                registers[rip] = (instruction << 5) >> 10;
-                break;
-
-            case 0b10011:
-                printf("SETREG Instruction");
-                registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
-                break;
-
-            default:
-                printf("Opcode Identification Failure");
-                break;
+            printf("\n\n");
+            program_counter = registers[rip];
         }
 
-        printf("\n\n");
-        program_counter = registers[rip];
+        printf("\n\nrax: %d  |  rbx: %d\n", registers[rax], registers[rbx]);
+        printf("rcx: %d  |  rdx: %d\n", registers[rcx], registers[rdx]);
+        printf("rsi: %d  |  rdi: %d\n", registers[rsi], registers[rdi]);
+        printf("rbp: %d  |  rsp: %d\n", registers[rbp], registers[rsp]);
+        printf("r1:  %d  |  r2:  %d\n", registers[r1], registers[r2]);
+        printf("r3:  %d  |  r4:  %d\n", registers[r3], registers[r4]);
+        printf("r5:  %d  |  r6:  %d\n", registers[r5], registers[r6]);
+        printf("r7:  %d  |  r8:  %d\n", registers[r7], registers[r8]);
+        printf("rip: %d\n\n", registers[rip]);
+
+        //The following code resets all registers, flags, and the program counter to zero
+        //This allows for the code to continue to run in predictable ways when the next program is initiated
+        program_counter = 0;
+        for (int i = 0; i < 17; i++) {
+            registers[i] = 0;
+        }
+        ZF_Flag = 0;
+        PI_Flag = 0;
+        NI_Flag = 0;
     }
 
     free(RAM);
     free(binarynum);
     free(binarynum2);
 
-    printf("\n\nrax: %d  |  rbx: %d\n", registers[rax], registers[rbx]);
-    printf("rcx: %d  |  rdx: %d\n", registers[rcx], registers[rdx]);
-    printf("rsi: %d  |  rdi: %d\n", registers[rsi], registers[rdi]);
-    printf("rbp: %d  |  rsp: %d\n", registers[rbp], registers[rsp]);
-    printf("r1:  %d  |  r2:  %d\n", registers[r1], registers[r2]);
-    printf("r3:  %d  |  r4:  %d\n", registers[r3], registers[r4]);
-    printf("r5:  %d  |  r6:  %d\n", registers[r5], registers[r6]);
-    printf("r7:  %d  |  r8:  %d\n", registers[r7], registers[r8]);
-
     return 0;
 }
 
-int BinaryStringToInt(char* string, int start, int length) {
+int BinaryStringToInt(char *string, int start, int length) {
     unsigned int retval = 0;
     for (int i = start; i < start + length; i++) {
         retval += (unsigned int)((unsigned int)string[i] - (unsigned int)48) << (length - (i - start) - 1);
@@ -273,7 +286,7 @@ int BinaryStringToInt(char* string, int start, int length) {
 }
 
 void ArgumentInputs(void) {
-    char* file_string = (char*)malloc(max_file_string_length * sizeof(char));
+    char *file_string = (char *)malloc(max_file_string_length * sizeof(char));
     int file_string_logical_size = 0;
 
     // Right now max argument size is 140 characters, maybe change this later
@@ -283,7 +296,7 @@ void ArgumentInputs(void) {
     int arg_size = strlen(args);
 
     // ----- looks for file to be scanned and loaded into memory -----
-    char* load_file = "load:\"";
+    char *load_file = "load:\"";
     int load_file_str_size = strlen(load_file);
     int file_path_index = strfind(load_file, args, load_file_str_size, arg_size) + load_file_str_size;
 
@@ -299,7 +312,7 @@ void ArgumentInputs(void) {
     // ----- Note: the text file path must be in quotes after load: -----
 
     // ----- looks for readas to determine how to interpret contents of text file -----
-    char* readas = "readas:\"";
+    char *readas = "readas:\"";
     int readas_size = strlen(readas);
     int readas_index = strfind(readas, args, readas_size, arg_size) + readas_size;
 
@@ -313,7 +326,7 @@ void ArgumentInputs(void) {
     }
     readas_type[readas_type_size] = '\0';
 
-    int (*interpret_file_as)(char*, int, int);
+    int (*interpret_file_as)(char *, int, int);
 
     if (strncmp(readas_type, "binary", IntMin(readas_type_size, 6)) == 0) {
         interpret_file_as = BinaryStringToInt;
@@ -324,7 +337,7 @@ void ArgumentInputs(void) {
     }
     // ----- Options right now are binary and hexadecimal ------
 
-    FILE* fptr;
+    FILE *fptr;
     fptr = fopen(PATH, "r");
 
     char mystring[MAX_FILE_LINE_READ];
@@ -375,7 +388,7 @@ void ArgumentInputs(void) {
     free(file_string);
 }
 
-int strfind(char* searchfor, char* in, int searchfor_size, int in_size) {
+int strfind(char *searchfor, char *in, int searchfor_size, int in_size) {
     int comparison_counter = 0;
 
     for (int i = 0; i < in_size - searchfor_size; i++) {
@@ -394,7 +407,7 @@ int strfind(char* searchfor, char* in, int searchfor_size, int in_size) {
 }
 
 // For letter values, this function only excepts capitals (A-F)
-int HexStringToInt(char* string, int start, int length) {
+int HexStringToInt(char *string, int start, int length) {
     int retval = 0;
     for (int i = start; i < start + length; i++) {
         if ((int)string[i] <= (int)'9') {
@@ -417,12 +430,12 @@ int IntMin(int arg1, int arg2) {
 // Unitialized strings should be set to NULL when using this function
 // Unkown string sizes call for heap allocated memroy, don't forget to free it
 // Use function like: char* str = IntToBinaryString(str, 19);
-char* IntToBinaryString(char* str, int input, int padding) {
+char *IntToBinaryString(char *str, int input, int padding) {
     // input is converted to unsigned int since my logic relies on the fact that bit shifting to the left
     // fills in the new binary spaces with 0s instead of 1s as happens for negative signed integers
-    unsigned int conversion = (unsigned int) input;
+    unsigned int conversion = (unsigned int)input;
 
-    str = (char*)realloc(str, (padding + 1) * sizeof(char));
+    str = (char *)realloc(str, (padding + 1) * sizeof(char));
 
     if (str != NULL) {
         for (int i = padding - 1; i > 0; i--) {

@@ -6,7 +6,7 @@ Operations
 
 HLT (halt) = (opcode) 00000 (remaining bits are undefined for now)
 
-MOV (move value at adress into register) = (opcode) 00001 (register) xxxxx (address)
+MOVA (move value at adress into register) = (opcode) 00001 (register) xxxxx (address)
 
 ADD = (opcode) 00010 (register 1, where result is stored) xxxxx (register 2) xxxxx (remaining bits are undefined for now) -> register1 = register1 + register2
 
@@ -60,7 +60,7 @@ IMUL (integer multiplication) = (opcode) 10000 (register1) xxxxx (register2) xxx
 
 IDIV (integer division) = (opcode) 10001 (register1) xxxxx (register2) xxxxx -> register1 = register1 / register2
 
-CALL (call function) = (opcode) 10010 (address, 22 bits)
+CALL (call function) = (opcode) 10010 (address, 22 bits) (remaining 5 bits are undefined)
 
 SETREG (set register equal to constant value that is known at program time) = (opcode) 10011 (register) xxxxx (constant value, 22 bits)
 

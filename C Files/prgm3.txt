@@ -1,19 +1,20 @@
 10011 00001 0000000000000001100100         ; SETREG: set rbx (base pointer register) equal to 100
 01110 00111 00001 00000000000000000        ; EQU: set the value in rsp (stack pointer) equal to rbx
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
+10011 01000 0000000000000000000101         ; SETREG: r1 = 5
+00110 0 01000 000000000000000000000        ; push r1 onto stack
+10011 01000 0000000000000000001010         ; SETREG: r1 = 10
+00110 0 01000 000000000000000000000        ; push r1 onto stack
+10011 01000 0000000000000000000101         ; SETREG: r1 = 5
+00110 0 01000 000000000000000000000        ; push r1 onto stack
+10011 01000 0000000000000000001010         ; SETREG: r1 = 10
+00110 0 01000 000000000000000000000        ; push r1 onto stack
+00110 1 01001 000000000000000000000        ; pop last value of stack into r2 (10)
+00110 1 01010 000000000000000000000        ; pop last value of stack into r3 (5)
+10000 01001 01010 00000000000000000        ; multiply r2 by r3 and store result in r2
+00110 1 01010 000000000000000000000        ; pop last value of stack into r3 (10)
+00110 1 01011 000000000000000000000        ; pop last value of stack into r4 (5)
+10001 01010 01011 00000000000000000        ; divide r3 by r2 and store result in r3
+10010 0000000000000000101000 00000         ; CALL: jump to address 20 and push return address onto stack
 ;
 ;
 ;
@@ -33,3 +34,9 @@
 ;
 ;
 00000   000000000000000000000000000       ; HLT the program
+;
+;
+;
+;
+00110 1 01100 000000000000000000000       ; pop return address into r5
+01110 10000 01100 00000000000000000       ; jump back to main function by setting rip equal to r5
