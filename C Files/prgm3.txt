@@ -13,8 +13,8 @@
 10000 01001 01010 00000000000000000        ; multiply r2 by r3 and store result in r2
 00110 1 01010 000000000000000000000        ; pop last value of stack into r3 (10)
 00110 1 01011 000000000000000000000        ; pop last value of stack into r4 (5)
-10001 01010 01011 00000000000000000        ; divide r3 by r2 and store result in r3
-10010 0000000000000000101000 00000         ; CALL: jump to address 20 and push return address onto stack
+10011 01000 0000000000000000101000         ; SETREG: r1 = 20
+10010 01000 0000000000000000000000         ; CALL: jump to address 20 (stored in r1) and push return address onto stack
 10011 01101 0000000000000000001111         ; SETREG: set r6 = 15
 10011 01110 0000000000000000001110         ; SETREG: set r7 = 14
 10011 01111 0000000000000000011001         ; SETREG: set r8 = 25
@@ -23,9 +23,9 @@
 10011 10000 0000000000000000100011         ; SETREG: set rip equal to address 35 (jump to the end of the program)
 ;
 ;
-10011 00000 0000000000000000011111         ; SETREG: set rax equal to 31
-;
-;
+10011 00000 0000000000000000110011         ; SETREG: set rax equal to 51
+00111 00000 00000 00000000000000000        ; store rax's value at memory address 50 (value in rax)
+00001 00010 00000 00000000000000000        ; move value at address contained in rax into rcx
 ;
 ;
 ;

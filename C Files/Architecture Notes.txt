@@ -2,11 +2,13 @@ First 5 bits detail the opcode (operation code / instruction code)
 registers are 5 bits
 addresses are 22 bits
 
+memory operations go destination, then source (like intel syntax)
+
 Operations
 
 HLT (halt) = (opcode) 00000 (remaining bits are undefined for now)
 
-MOVA (move value at adress into register) = (opcode) 00001 (register) xxxxx (address)
+MOV (move value at adress contained in register2 into register1) = (opcode) 00001 (register1) xxxxx (register2) xxxxx (remaining bits undefined)
 
 ADD = (opcode) 00010 (register 1, where result is stored) xxxxx (register 2) xxxxx (remaining bits are undefined for now) -> register1 = register1 + register2
 
@@ -35,7 +37,7 @@ pop:
 - current value at memory address in rsp in placed into the register
 - rsp is incremented by one
 
-STORE (put value in register at specified memory location) = (opcode) 00111 (register) xxxxx (address)
+STORE (memory address specified by register1 has its value set equal to value in register2) = (opcode) 00111 (register1) xxxxx (register2) xxxxx (remaining bits undefined)
 
 LBITSHFTR (logical bit shift right 1, meaning right is filled with 0s) = (opcode) 01000 (register1) xxxxx (register2) xxxxx (remaining bits are undefined for now)
 *Note: register1 = register1 = register1 >> register2 (register1 is bitshifted right the number of times of the value in register2, and the result in stored in register1)
@@ -60,7 +62,7 @@ IMUL (integer multiplication) = (opcode) 10000 (register1) xxxxx (register2) xxx
 
 IDIV (integer division) = (opcode) 10001 (register1) xxxxx (register2) xxxxx -> register1 = register1 / register2
 
-CALL (call function) = (opcode) 10010 (address, 22 bits) (remaining 5 bits are undefined)
+CALL (call function) = (opcode) 10010 (register, which contains the address of the function to be jumped to) (remaining bits are undefined)
 
 SETREG (set register equal to constant value that is known at program time) = (opcode) 10011 (register) xxxxx (constant value, 22 bits)
 

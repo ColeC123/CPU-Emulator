@@ -82,8 +82,8 @@ int main(void) {
                     break;
 
                 case 0b00001:
-                    printf("MOVA Instruction");
-                    registers[(instruction << 5) >> 27] = RAM[(instruction << 10) >> 10];
+                    printf("MOV Instruction");
+                    registers[(instruction << 5) >> 27] = RAM[registers[(instruction << 10) >> 27]];
                     break;
 
                 case 0b00010:
@@ -175,7 +175,7 @@ int main(void) {
 
                 case 0b00111:
                     printf("STORE Instruction");
-                    RAM[(instruction << 10) >> 10] = registers[(instruction << 5) >> 27];
+                    RAM[registers[(instruction << 5) >> 27]] = registers[(instruction << 10) >> 27];
                     break;
 
                 case 0b01000:
@@ -232,7 +232,7 @@ int main(void) {
                     registers[rsp]--;
                     RAM[registers[rsp]] = registers[rip];
                     // set rip to address of function
-                    registers[rip] = (instruction << 5) >> 10;
+                    registers[rip] = registers[(instruction << 5) >> 27];
                     break;
 
                 case 0b10011:
