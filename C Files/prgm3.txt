@@ -1,0 +1,35 @@
+10011 00001 0000000000000001100100         ; SETREG: set rbx (base pointer register) equal to 100
+01110 00111 00001 00000000000000000        ; EQU: set the value in rsp (stack pointer) equal to rbx
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+;
+00000   000000000000000000000000000       ; HLT the program

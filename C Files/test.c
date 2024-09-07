@@ -14,9 +14,9 @@ int* RAM;
 // For now all of the registers will just be initialized to 0 at the start of the program
 static int registers[17] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-static int ZF_Flag = 0; //zero result flag
-static int PI_Flag = 0; //positive int result flag
-static int NI_Flag = 0; //negative int result flag
+static int ZF_Flag = 0;  // zero result flag
+static int PI_Flag = 0;  // positive int result flag
+static int NI_Flag = 0;  // negative int result flag
 
 // keeps track of current
 static int program_counter = 0;
@@ -53,7 +53,7 @@ int HexStringToInt(char* string, int start, int length);
 
 int IntMin(int arg1, int arg2);
 
-char* IntToBinaryString(char* str, int input);
+char* IntToBinaryString(char* str, int input, int padding);
 
 int main(void) {
     RAM = (int*)malloc(RAM_SIZE * sizeof(int));
@@ -71,7 +71,7 @@ int main(void) {
         instruction = RAM[program_counter];
         registers[rip]++;
 
-        binarynum = IntToBinaryString(binarynum, instruction >> 27);
+        binarynum = IntToBinaryString(binarynum, instruction >> 27, 32);
         printf("opcode: %s\n", binarynum);
 
         switch (instruction >> 27) {
@@ -99,13 +99,13 @@ int main(void) {
                 } else {
                     ZF_Flag = 0;
                 }
-                
+
                 if (comparison_result > 0) {
                     PI_Flag = 1;
                 } else {
                     PI_Flag = 0;
                 }
-                
+
                 if (comparison_result < 0) {
                     NI_Flag = 1;
                 } else {
@@ -123,13 +123,13 @@ int main(void) {
                             registers[rip] = (instruction << 10) >> 10;
                         }
                         break;
-                    
+
                     case 0b00001:
                         if (ZF_Flag == 0) {
                             registers[rip] = (instruction << 10) >> 10;
                         }
                         break;
-                    
+
                     case 0b00010:
                         if (NI_Flag == 1) {
                             registers[rip] = (instruction << 10) >> 10;
@@ -147,7 +147,7 @@ int main(void) {
                             registers[rip] = (instruction << 10) >> 10;
                         }
                         break;
-                    
+
                     case 0b00101:
                         if (PI_Flag == 1 || ZF_Flag == 1) {
                             registers[rip] = (instruction << 10) >> 10;
@@ -163,6 +163,13 @@ int main(void) {
 
             case 0b00110:
                 printf("PUSH/POP");
+                if ((instruction << 5) >> 31 == 0) {
+                    registers[rsp]--;
+                    RAM[registers[rsp]] = registers[(instruction << 6) >> 27];
+                } else {
+                    registers[(instruction << 6) >> 27] = RAM[registers[rsp]];
+                    registers[rsp]++;
+                }
                 break;
 
             case 0b00111:
@@ -180,7 +187,7 @@ int main(void) {
             case 0b01001:
                 printf("BITSHFTL Instruction");
                 // instruction is already an unsigned integer, giving it consistent bit shifting behavior
-                registers[(instruction << 5) >> 27]  <<= (registers[(instruction << 10) >> 27]);
+                registers[(instruction << 5) >> 27] <<= (registers[(instruction << 10) >> 27]);
                 break;
 
             case 0b01010:
@@ -206,6 +213,30 @@ int main(void) {
             case 0b01110:
                 printf("EQU Instruction");
                 registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10000:
+                printf("IMUL Instruction");
+                registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10001:
+                printf("IDIV Instruction");
+                registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10010:
+                printf("CALL Instruction");
+                //Push return address to stack
+                registers[rsp]--;
+                RAM[registers[rsp]] = registers[rip];
+                //set rip to address of function
+                registers[rip] = (instruction << 5) >> 10;
+                break;
+
+            case 0b10011:
+                printf("SETREG Instruction");
+                registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
                 break;
 
             default:
@@ -236,7 +267,7 @@ int main(void) {
 int BinaryStringToInt(char* string, int start, int length) {
     unsigned int retval = 0;
     for (int i = start; i < start + length; i++) {
-        retval += ((unsigned int)string[i] - 48) << (length - (i - start) - 1);
+        retval += (unsigned int)((unsigned int)string[i] - (unsigned int)48) << (length - (i - start) - 1);
     }
     return (int)retval;
 }
@@ -329,6 +360,7 @@ void ArgumentInputs(void) {
     int curr_file_search_count = 0;
     int past_file_search_count = 0;
     int ram_position_count = 0;
+
     //<= is in order to make sure that the null terminating character of the file is included in the search
     while (curr_file_search_count <= file_string_logical_size) {
         if (file_string[curr_file_search_count] == '\n' || file_string[curr_file_search_count] == '\0') {
@@ -340,7 +372,6 @@ void ArgumentInputs(void) {
         }
         curr_file_search_count++;
     }
-
     free(file_string);
 }
 
@@ -386,30 +417,20 @@ int IntMin(int arg1, int arg2) {
 // Unitialized strings should be set to NULL when using this function
 // Unkown string sizes call for heap allocated memroy, don't forget to free it
 // Use function like: char* str = IntToBinaryString(str, 19);
-char* IntToBinaryString(char* str, int input) {
+char* IntToBinaryString(char* str, int input, int padding) {
     // input is converted to unsigned int since my logic relies on the fact that bit shifting to the left
     // fills in the new binary spaces with 0s instead of 1s as happens for negative signed integers
-    unsigned int conversion = input;
+    unsigned int conversion = (unsigned int) input;
 
-    unsigned int temp = conversion;
-    int binary_string_size = 0;
-
-    binary_string_size++;
-    temp = temp >> 1;
-
-    while (temp > 0) {
-        binary_string_size++;
-        temp = temp >> 1;
-    }
-
-    str = (char*)realloc(str, (binary_string_size + 1) * sizeof(char));
+    str = (char*)realloc(str, (padding + 1) * sizeof(char));
 
     if (str != NULL) {
-        for (int i = binary_string_size - 1; i >= 0; i--) {
+        for (int i = padding - 1; i > 0; i--) {
             str[i] = (char)(((conversion % 2) + 48));
             conversion = conversion >> 1;
         }
-        str[binary_string_size] = '\0';
+        str[0] = (char)(conversion + 48);
+        str[padding] = '\0';
 
         return str;
     } else {

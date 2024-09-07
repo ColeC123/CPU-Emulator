@@ -21,10 +21,10 @@
 00100   00000 0000000000000000010110           ; JMPIF jump to address 22 if equal
 00001   10000 0000000000000000100110           ; MOV: jump to address 23 by setting value in rip register to 23
 01110   01110 01000 00000000000000000          ; EQU: set value in r7 equal to value in r1 
-;
-;
-;
-;
+00010   00001 01011 00000000000000000          ; ADD: Set rbx (base register for stack) equal to r4 (should hold the value 51) 
+01110   00111 00001 00000000000000000          ; EQU: set rsp (stack pointer) equal to rbx
+00110  0 01001 000000000000000000000           ; PUSH: push r2 to the stack
+00110  1 01111 000000000000000000000           ; POP: pop stack value into r8
 ;
 ;
 ;

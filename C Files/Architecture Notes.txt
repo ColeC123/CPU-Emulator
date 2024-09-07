@@ -29,7 +29,7 @@ PUSH/POP = (opcode) 00110 (push = 0 or pop = 1) x (register) xxxxx
        You should also ensure that the starting address for rbp and rsp is sufficiently far away from instructions in memory
        This is because the stack grows downwards (rsp is decremented), and a stack overflow is likely to cause corruption of data and possibly instructions
 push:
-- current value of register placed in memory at rsp's location
+- current value of register placed in memory location rsp points to
 - rsp decremented by one
 pop:
 - current value at memory address in rsp in placed into the register
@@ -55,6 +55,14 @@ EQU (equals) = (opcode) 01110 (register1) xxxxx (register2) xxxxx (remaining bit
 *JMP is a unique instruction, since the rip register (instruction pointer) can be modified directly. 
 In ordder to jump to a specific address do EQU rip, register. This moves the address to be jumped to directly into the rip register.
 In binary this looks like: (equ opcode) 01110 (rip register) 10000 (register) xxxxx
+
+IMUL (integer multiplication) = (opcode) 10000 (register1) xxxxx (register2) xxxxx -> register1 = register1 * register2
+
+IDIV (integer division) = (opcode) 10001 (register1) xxxxx (register2) xxxxx -> register1 = register1 / register2
+
+CALL (call function) = (opcode) 10010 (address, 22 bits)
+
+SETREG (set register equal to constant value that is known at program time) = (opcode) 10011 (register) xxxxx (constant value, 22 bits)
 
 Register Information
 
