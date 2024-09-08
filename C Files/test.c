@@ -2,8 +2,8 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-// 22 bits for address value allows for 2^22 memory slots, I'm only going for 4096 (2^12) right now
-static const int RAM_SIZE = 4096;
+
+#define RAM_SIZE 536870912
 int *RAM;
 
 // Arbitrary file size limit, could be much larger
