@@ -2,7 +2,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-// 23 bits for address value allows for 2^23 memory slots, I'm only going for 4096 (2^12) right now
+// 22 bits for address value allows for 2^22 memory slots, I'm only going for 4096 (2^12) right now
 static const int RAM_SIZE = 4096;
 int *RAM;
 
