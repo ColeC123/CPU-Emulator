@@ -72,6 +72,7 @@ int main(void) {
             instruction = RAM[program_counter];
             registers[rip]++;
 
+            //Consider removing bitshift and replacing it with bitwise and (see example in key.c)
             binarynum = IntToBinaryString(binarynum, instruction, 32);
             printf("opcode: %s\n", binarynum);
 
