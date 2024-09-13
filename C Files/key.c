@@ -1,17 +1,18 @@
 #include "stdio.h"
 #include "windows.h"
 
-static int vk_check_size = 73;
+static int vk_check_size = 72;
+
 static int vk_check[] = {
-    VK_LBUTTON, VK_RBUTTON, VK_MBUTTON, VK_BACK, VK_TAB, VK_RETURN, VK_SHIFT,
-    VK_CONTROL, VK_MENU, VK_CAPITAL, VK_SPACE, VK_HOME,
-    VK_LEFT, VK_UP, VK_RIGHT, VK_DOWN, VK_SNAPSHOT, VK_INSERT, VK_DELETE,
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
-    'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-    'W', 'X', 'Y', 'Z', VK_LWIN, VK_OEM_1, VK_OEM_PLUS, VK_OEM_COMMA, VK_OEM_MINUS,
-    VK_OEM_PERIOD, VK_OEM_2, VK_OEM_3, VK_OEM_4, VK_OEM_5, VK_OEM_6, VK_OEM_7,
-    VK_LSHIFT, VK_RSHIFT, VK_LCONTROL, VK_RCONTROL, VK_RMENU, VK_LMENU,
-    };
+    VK_DELETE, VK_INSERT, VK_SNAPSHOT,
+    VK_OEM_3, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', VK_OEM_MINUS, VK_OEM_PLUS, VK_BACK,
+    VK_TAB, 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', VK_OEM_4, VK_OEM_6, VK_OEM_5,
+    VK_CAPITAL, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', VK_OEM_1, VK_OEM_7, VK_RETURN,
+    VK_LSHIFT, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', VK_OEM_COMMA, VK_OEM_PERIOD, VK_OEM_2, VK_RSHIFT,
+    VK_LCONTROL, VK_LWIN, VK_LMENU, VK_SPACE, VK_RMENU, VK_RCONTROL, VK_LEFT, VK_DOWN, VK_UP, VK_RIGHT,
+    VK_SHIFT, VK_CONTROL, VK_MENU,
+    VK_LBUTTON, VK_RBUTTON, VK_MBUTTON,
+};
 
 static char conversion_array[256][20];
 
@@ -51,11 +52,70 @@ int main(void) {
             break;
         }
 
-        for (int i = 0; i < vk_check_size; i++) {
-            if (i % 12 == 0) {
-                printf("\n");
+        for (int i = 0; i < 3; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
             }
-
+        }
+        printf("\n");
+        for (int i = 3; i < 17; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 17; i < 31; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 31; i < 44; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 44; i < 56; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 56; i < 66; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 66; i < 69; i++) {
+            //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
+            if (GetAsyncKeyState(vk_check[i]) & -1) {
+                printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
+            } else {
+                printf("\x1b[0m%s ", conversion_array[vk_check[i]]);
+            }
+        }
+        printf("\n");
+        for (int i = 69; i < 72; i++) {
             //-1 means leftmost is set, and binary and will return 0 if lefmost bit is not set, and greater than 0 if otherwise
             if (GetAsyncKeyState(vk_check[i]) & -1) {
                 printf("\x1b[35m\x1b[106m%s\x1b[0m ", conversion_array[vk_check[i]]);
