@@ -2,6 +2,8 @@
 #include "windows.h"
 #include "string.h"
 
+#define INT_LM_BIT 2147483648
+
 DWORD WINAPI myThread(LPVOID lpParamter) {
     int* test = (int*)lpParamter;
     int count = 0;
@@ -39,7 +41,7 @@ int main(void) {
 
     while (1) {
         // if user presses esc, then the program quits
-        if (GetAsyncKeyState(0x1B) & -1) {
+        if (GetAsyncKeyState(0x1B) & INT_LM_BIT) {
             break;
         }
 
