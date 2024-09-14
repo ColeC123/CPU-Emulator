@@ -58,7 +58,10 @@ char *IntToBinaryString(char *str, int input, int padding);
 
 static int current_key_interrupt = 0;
 
-//Spawns a thread to handle input separately
+//Spawns a thread to handle input separately for best speed
+//ideally Windows will move this thread onto a separate core or hyperthread (hardware thread not software thread)
+//where the emulator and input detector can run as fast as possible on each of their respecitve cores or hyperthreads
+//however, it is up to the OS to decide how to handle and where to create the thread
 DWORD WINAPI inputThread(LPVOID lpParam) {
     static int vk_check_size = 72;
 
@@ -77,6 +80,10 @@ DWORD WINAPI inputThread(LPVOID lpParam) {
 
     //creates an array where the index of a virtual key corresponds to an int value of your choosing (like a hash map)
     int conversion_array[256];
+
+    //In a real computer key presses send a scan code that is different from an ascii character, but to simplify the
+    //processing of key presses and to reduce the compute time for the emulator, I am converting the virtual keys
+    //to ascii characters when possible
 
     //the ascii value for 0 - 9 are the same as the virtual key
     conversion_array[(int)'0'] = (int)'0';
@@ -123,7 +130,40 @@ DWORD WINAPI inputThread(LPVOID lpParam) {
     conversion_array[VK_LBUTTON] = (int)VK_LBUTTON; //left mouse button will be same as its virtual key
     conversion_array[VK_RBUTTON] = (int)VK_RBUTTON; //right mouse button will be same as its virtual key
     conversion_array[VK_MBUTTON] = (int)VK_MBUTTON; //middle mouse button will be same as its virtual key
-    conversion_array[VK_BACK] = (int)'\b'; //backspace maps to ascii character for backspace (ascii character only moves cursor back one, to remove a character you need a space after the backspace) 
+    conversion_array[VK_BACK] = (int)'\b'; //backspace maps to ascii character for backspace (ascii backspace only shifts cursor back by one for each backsapce character, nothing else)
+    conversion_array[VK_TAB] = (int)'\t'; //tab corresponds to the tab ascii character
+    conversion_array[VK_RETURN] = (int)'\n'; //Enter key will correspond to newline
+    conversion_array[VK_SHIFT] = (int)VK_SHIFT; //there is no nice ascii equivalent for the shift key
+    conversion_array[VK_CONTROL] = (int)VK_CONTROL; //there is no nice ascii equivalenet for the control key
+    conversion_array[VK_MENU] = (int)VK_MENU; // there is no nice ascii equivalent for the alt key
+    conversion_array[VK_CAPITAL] = (int)VK_CAPITAL; //there is no nice ascii equivalent for the CAPSLOCK key
+    conversion_array[VK_SPACE] = (int)' '; //spacebar will correspond to the ascii character for a space
+    conversion_array[VK_LEFT] = (int)VK_LEFT; //there is no nice ascii equivalent for the arrow keys
+    conversion_array[VK_UP] = (int)VK_UP; //there is no nice ascii equivalent for the arrow keys
+    conversion_array[VK_RIGHT] = (int)VK_RIGHT; //there is no nice ascii equivalent for the arrow keys
+    conversion_array[VK_DOWN] = (int)VK_DOWN; //there is no nice ascii equivalent for the arrow keys
+    conversion_array[VK_SNAPSHOT] = (int)VK_SNAPSHOT; //there is no nice ascii equivalent for the PRTSC key
+    conversion_array[VK_INSERT] = (int)VK_INSERT; //there is no nice ascii equivalent for the INSERT key
+    conversion_array[VK_DELETE] = (int)'\x7F'; //the delete key will correspond to the delete ascii character
+    conversion_array[VK_LWIN] = (int)VK_LWIN; //there is no ascii equivalent for the left windows key
+    conversion_array[VK_LSHIFT] = (int)VK_LSHIFT; //there is no ascii equivalent for left shift
+    conversion_array[VK_RSHIFT] = (int)VK_RSHIFT; //there is no ascii equivalent for right shift
+    conversion_array[VK_LCONTROL] = (int)VK_LCONTROL;  //there is no ascii equivalent for left control
+    conversion_array[VK_RCONTROL] = (int)VK_RCONTROL; //there is no ascii equivalent for right control
+    conversion_array[VK_RMENU] = (int)VK_RMENU; //there is no ascii equivalent for right alt
+    conversion_array[VK_LMENU] = (int)VK_LMENU; //there is no ascii equivalent for left alt
+    conversion_array[VK_OEM_1] = (int)';'; //VK_OEM_1 key corresponds to ;
+    conversion_array[VK_OEM_2] = (int)'/'; //VK_OEM_2 key corresponds to /
+    conversion_array[VK_OEM_3] = (int)'`'; //VK_OEM_3 key corresponds to `
+    conversion_array[VK_OEM_4] = (int)'['; //VK_OEM_4 key corresponds to [
+    conversion_array[VK_OEM_5] = (int)'\\'; /*VK_OEM_5 key correpsonds to \ */
+    conversion_array[VK_OEM_6] = (int)']'; //VK_OEM_6 key corresponds to ]
+    conversion_array[VK_OEM_7] = (int)'\''; //VK_OEM_7 key corresponds to '
+    conversion_array[VK_OEM_PLUS] = (int)'='; //the + key happens to be where = is also, but = is what shows up when shift is not pressed
+    conversion_array[VK_OEM_COMMA] = (int)','; //the , key corresponds to ,
+    conversion_array[VK_OEM_MINUS] = (int)'-'; //the - key corresponds to -
+    conversion_array[VK_OEM_PERIOD] = (int)'.'; //the . key corresponds to .
+
 
     for (int i = 0; i < vk_check_size; i++) {
         //-1 is always represented by the leftmst bit being sit in twos complement
@@ -137,6 +177,9 @@ DWORD WINAPI inputThread(LPVOID lpParam) {
 
 int main(void) {
     RAM = (int *)malloc(RAM_SIZE * sizeof(int));
+
+    //if this is 0 that means no key interrupt was reported
+    int key_interrupt;
 
     char *binarynum = NULL;
     char *binarynum2 = NULL;
