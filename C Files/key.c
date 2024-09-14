@@ -16,8 +16,6 @@ static int vk_check[] = {
 
 static char conversion_array[256][20];
 
-char* vkToString(int vk);
-
 void genVkConversionArray(void);
 
 int main(void) {
@@ -154,6 +152,7 @@ void genVkConversionArray(void) {
         conversion_array[i][1] = '\0';
     }
 
+    //This was every bit as painful as it looks
     strncpy(conversion_array[VK_LBUTTON], "LEFTMOUSEBUTTON", 20);
     strncpy(conversion_array[VK_RBUTTON], "RIGHTMOUSEBUTTON", 20);
     strncpy(conversion_array[VK_MBUTTON], "MIDDLEMOUSEBUTTON", 20);
