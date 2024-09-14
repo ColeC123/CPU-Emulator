@@ -4,6 +4,9 @@
 #include "string.h"
 #include "windows.h"
 
+//minimum value for a signed integer, this will have the leftmost bit set only
+#define INT_LM_BIT 2147483648
+
 #define RAM_SIZE 536870912
 int *RAM;
 
@@ -63,6 +66,8 @@ static int current_key_interrupt = 0;
 //where the emulator and input detector can run as fast as possible on each of their respecitve cores or hyperthreads
 //however, it is up to the OS to decide how to handle and where to create the thread
 DWORD WINAPI inputThread(LPVOID lpParam) {
+    int* key_interrupt = (int*)lpParam;
+
     static int vk_check_size = 72;
 
     //This is ordered based on how the keys appear on the keyboard
@@ -165,11 +170,27 @@ DWORD WINAPI inputThread(LPVOID lpParam) {
     conversion_array[VK_OEM_PERIOD] = (int)'.'; //the . key corresponds to .
 
 
-    for (int i = 0; i < vk_check_size; i++) {
-        //-1 is always represented by the leftmst bit being sit in twos complement
-        //most significant bit set means key is down in GetAsyncKeyState
-        if (GetAsyncKeyState(vk_check[i] & -1)) {
+    //key tracker is used to specify whether or not the key has been pressed since the last check
+    bool key_tracker[256];
+    //initialize everything to false
+    memset(key_tracker, false, 256 * sizeof(bool));
 
+    for (int i = 0; i < vk_check_size; i++) {
+        //INT_LM_BIT has its l
+        //most significant bit set means key is down in GetAsyncKeyState
+        if (key_tracker[i] == false && GetAsyncKeyState(vk_check[i]) & (int)INT_LM_BIT) {
+            //note that keypress has been recorded
+            key_tracker[i] == true;
+
+            //the bitwise or with -1 is to set the left bit equal to 1 to indicate the key is down
+            //this works since the compiler will interpret the -1 as an integer, which is the datatype I am working with
+            *key_interrupt = conversion_array[vk_check[i]] | -1; 
+        } else if (key_tracker[i] == true && GetAsyncKeyStaet(vk_check[i]) ^ -1) {
+            //note that key-up has been recorded
+            key_tracker[i] == false;
+
+            //No bitwise or is needed here since a 0 in the leftmost bit would be a negative value
+            *key_interrupt = conversion_array[vk_check[i]];
         }
     }
     return 0;
