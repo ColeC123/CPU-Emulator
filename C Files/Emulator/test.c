@@ -56,8 +56,82 @@ int IntMin(int arg1, int arg2);
 
 char *IntToBinaryString(char *str, int input, int padding);
 
+static int current_key_interrupt = 0;
+
 //Spawns a thread to handle input separately
 DWORD WINAPI inputThread(LPVOID lpParam) {
+    static int vk_check_size = 72;
+
+    //This is ordered based on how the keys appear on the keyboard
+    //Note: I left some keys out which aren't commonly used because this alone took a long time
+    static int vk_check[] = {
+        VK_DELETE, VK_INSERT, VK_SNAPSHOT,
+        VK_OEM_3, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', VK_OEM_MINUS, VK_OEM_PLUS, VK_BACK,
+        VK_TAB, 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', VK_OEM_4, VK_OEM_6, VK_OEM_5,
+        VK_CAPITAL, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', VK_OEM_1, VK_OEM_7, VK_RETURN,
+        VK_LSHIFT, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', VK_OEM_COMMA, VK_OEM_PERIOD, VK_OEM_2, VK_RSHIFT,
+        VK_LCONTROL, VK_LWIN, VK_LMENU, VK_SPACE, VK_RMENU, VK_RCONTROL, VK_LEFT, VK_DOWN, VK_UP, VK_RIGHT,
+        VK_SHIFT, VK_CONTROL, VK_MENU,
+        VK_LBUTTON, VK_RBUTTON, VK_MBUTTON,
+    };
+
+    //creates an array where the index of a virtual key corresponds to an int value of your choosing (like a hash map)
+    int conversion_array[256];
+
+    //the ascii value for 0 - 9 are the same as the virtual key
+    conversion_array[(int)'0'] = (int)'0';
+    conversion_array[(int)'1'] = (int)'1';
+    conversion_array[(int)'2'] = (int)'2';
+    conversion_array[(int)'3'] = (int)'3';
+    conversion_array[(int)'4'] = (int)'4';
+    conversion_array[(int)'5'] = (int)'5';
+    conversion_array[(int)'6'] = (int)'6';
+    conversion_array[(int)'7'] = (int)'7';
+    conversion_array[(int)'8'] = (int)'8';
+    conversion_array[(int)'9'] = (int)'9';
+
+    //the ascii values for captial A - captial Z are the same as the virtual key. In order to make input easier
+    //to handle in the emulator, I have decided to map them to the lowercase versions
+    conversion_array[(int)'A'] = (int)'a';
+    conversion_array[(int)'B'] = (int)'b';
+    conversion_array[(int)'C'] = (int)'c';
+    conversion_array[(int)'D'] = (int)'d';
+    conversion_array[(int)'E'] = (int)'e';
+    conversion_array[(int)'F'] = (int)'f';
+    conversion_array[(int)'G'] = (int)'g';
+    conversion_array[(int)'H'] = (int)'h';
+    conversion_array[(int)'I'] = (int)'i';
+    conversion_array[(int)'J'] = (int)'j';
+    conversion_array[(int)'K'] = (int)'k';
+    conversion_array[(int)'L'] = (int)'l';
+    conversion_array[(int)'M'] = (int)'m';
+    conversion_array[(int)'N'] = (int)'n';
+    conversion_array[(int)'O'] = (int)'o';
+    conversion_array[(int)'P'] = (int)'p';
+    conversion_array[(int)'Q'] = (int)'q';
+    conversion_array[(int)'R'] = (int)'r';
+    conversion_array[(int)'S'] = (int)'s';
+    conversion_array[(int)'T'] = (int)'t';
+    conversion_array[(int)'U'] = (int)'u';
+    conversion_array[(int)'V'] = (int)'v';
+    conversion_array[(int)'W'] = (int)'w';
+    conversion_array[(int)'X'] = (int)'x';
+    conversion_array[(int)'Y'] = (int)'y';
+    conversion_array[(int)'Z'] = (int)'z';
+
+    //Next up are the rest of the keys in vk_check
+    conversion_array[VK_LBUTTON] = (int)VK_LBUTTON; //left mouse button will be same as its virtual key
+    conversion_array[VK_RBUTTON] = (int)VK_RBUTTON; //right mouse button will be same as its virtual key
+    conversion_array[VK_MBUTTON] = (int)VK_MBUTTON; //middle mouse button will be same as its virtual key
+    conversion_array[VK_BACK] = (int)'\b'; //backspace maps to ascii character for backspace (ascii character only moves cursor back one, to remove a character you need a space after the backspace) 
+
+    for (int i = 0; i < vk_check_size; i++) {
+        //-1 is always represented by the leftmst bit being sit in twos complement
+        //most significant bit set means key is down in GetAsyncKeyState
+        if (GetAsyncKeyState(vk_check[i] & -1)) {
+
+        }
+    }
     return 0;
 }
 
