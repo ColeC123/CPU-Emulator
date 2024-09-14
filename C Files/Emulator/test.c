@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "windows.h"
 
 #define RAM_SIZE 536870912
 int *RAM;
@@ -54,6 +55,11 @@ int HexStringToInt(char *string, int start, int length);
 int IntMin(int arg1, int arg2);
 
 char *IntToBinaryString(char *str, int input, int padding);
+
+//Spawns a thread to handle input separately
+DWORD WINAPI inputThread(LPVOID lpParam) {
+    return 0;
+}
 
 int main(void) {
     RAM = (int *)malloc(RAM_SIZE * sizeof(int));

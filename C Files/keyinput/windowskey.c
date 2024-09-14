@@ -3,6 +3,8 @@
 
 static int vk_check_size = 72;
 
+//This is ordered based on how the keys appear on the keyboard
+//Note: I left some keys out which aren't commonly used because this alone took a long time
 static int vk_check[] = {
     VK_DELETE, VK_INSERT, VK_SNAPSHOT,
     VK_OEM_3, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', VK_OEM_MINUS, VK_OEM_PLUS, VK_BACK,
@@ -19,8 +21,10 @@ static char conversion_array[256][20];
 void genVkConversionArray(void);
 
 int main(void) {
+    //get the handles for standard out and standard in to enable virtual terminal processing and to clear the input buffer
     HANDLE handleout = GetStdHandle(STD_OUTPUT_HANDLE);
     HANDLE handlein = GetStdHandle(STD_INPUT_HANDLE);
+
     LARGE_INTEGER start;
     LARGE_INTEGER end;
     LARGE_INTEGER freq;
@@ -42,10 +46,12 @@ int main(void) {
         // virtual terminal sequence for moving cursor. Supported on Windows, MacOS, and Linux
         printf("\x1b[0;0H");
 
+        //This allows for extremely accurate timing of the processor
         QueryPerformanceFrequency(&freq);
         QueryPerformanceCounter(&start);
 
         //-1 will always have the leftmost bit set in twos complement
+        //0x1B corresponds to the escape key, so the program will quit when escape is pressed
         if (GetAsyncKeyState(0x1B) & -1) {
             break;
         }
@@ -127,6 +133,7 @@ int main(void) {
         printf("\n\x1b[0m\nTime: %f miliseconds\n\n", time * 1000);
         printf("Frequency: %f program cycles per second\n", 1 / time);
 
+        //prevents the console's input buffer from filling up with a bunch of characters while typing
         FlushConsoleInputBuffer(handlein);
     }
     // Set text color to default and show cursor again
@@ -142,17 +149,20 @@ int main(void) {
 //want to be associated with that virtual keycode
 void genVkConversionArray(void) {
 
+    //the virtual key number for 0 - 9 matches the ascii value
     for (int i = (int)'0'; i <= (int)'9'; i++) {
         conversion_array[i][0] = (char)i;
         conversion_array[i][1] = '\0';
     }
 
+    //the virtual key number for A-Z matches the ascii value (only for the capital letters - lowercase could be achieved through a constant offset)
     for (int i = (int)'A'; i <= (int)'Z'; i++) {
         conversion_array[i][0] = (char)i;
         conversion_array[i][1] = '\0';
     }
 
     //This was every bit as painful as it looks
+    //The associated string with each virtual key can be modified by simply changing the string (just make sure it is less than 20 characters)
     strncpy(conversion_array[VK_LBUTTON], "LEFTMOUSEBUTTON", 20);
     strncpy(conversion_array[VK_RBUTTON], "RIGHTMOUSEBUTTON", 20);
     strncpy(conversion_array[VK_MBUTTON], "MIDDLEMOUSEBUTTON", 20);
