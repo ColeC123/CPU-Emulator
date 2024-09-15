@@ -1,6 +1,6 @@
+#include "stdbool.h"
 #include "stdio.h"
 #include "stdlib.h"
-#include "stdbool.h"
 #include "string.h"
 
 // Arbitrary file size limit, could be much larger
@@ -8,10 +8,10 @@
 
 #define MAX_FILE_LINE_READ 70
 
-//Using a struct for the input into ArgumentInputs makes it much easier to add functionality later on
+// Using a struct for the input into ArgumentInputs makes it much easier to add functionality later on
 typedef struct ArgList {
-    int* RAM;
-    bool* emulation_active;
+    int *RAM;
+    bool *emulation_active;
 } ArgList;
 
 int BinaryStringToInt(char *string, int start, int length);
@@ -26,7 +26,9 @@ int IntMin(int arg1, int arg2);
 
 char *IntToBinaryString(char *str, int input, int padding);
 
-int strInsert(char* str, int index, char value, int size);
+int strInsertChar(char *str, int index, char value, int size);
+
+int charfind(char searchfor, char *in, int in_size);
 
 int BinaryStringToInt(char *string, int start, int length) {
     unsigned int retval = 0;
@@ -46,10 +48,10 @@ int ArgumentInputs(ArgList Emargs) {
     fgets(args, 140, stdin);
     int arg_size = strlen(args);
 
-    char* look_for_exit = "exit";
+    char *look_for_exit = "exit";
     int exit_index = strfind(look_for_exit, args, 4, arg_size);
     if (exit_index != -1) {
-        //This lets the main program know to exit the loop and perform the proper cleanup
+        // This lets the main program know to exit the loop and perform the proper cleanup
         *(Emargs.emulation_active) = false;
         free(file_string);
         return 0;
@@ -61,6 +63,7 @@ int ArgumentInputs(ArgList Emargs) {
     int file_path_index = strfind(load_file, args, load_file_str_size, arg_size) + load_file_str_size;
 
     char PATH[257];
+    PATH[256] = '\0';  // Initialize last byte to be null terminator just in case
     int PATH_size = 0;
 
     // This is the logic for getting the PATH or directory to the textfile
@@ -76,28 +79,32 @@ int ArgumentInputs(ArgList Emargs) {
     int readas_size = strlen(readas);
     int readas_index = strfind(readas, args, readas_size, arg_size) + readas_size;
 
-    char readas_type[16];  // size is 16 to allow for wiggle room later on when naming more readas types
-    int readas_type_size = 0;
-
-    // This is the logic for getting the readas_type string from the arguments
-    for (int i = readas_index; args[i] != '"' && (i - readas_index) < 16 && i < arg_size; i++) {
-        readas_type[i - readas_index] = args[i];
-        readas_type_size++;
-    }
-    readas_type[readas_type_size] = '\0';
-
+    //Default interpretation of file will be binary string
     int (*interpret_file_as)(char *, int, int);
+    interpret_file_as = BinaryStringToInt;
 
-    if (strncmp(readas_type, "binary", IntMin(readas_type_size, 6)) == 0) {
-        interpret_file_as = BinaryStringToInt;
-    } else if (strncmp(readas_type, "hexadecimal", IntMin(readas_type_size, 11)) == 0) {
-        interpret_file_as = HexStringToInt;
-    } else {
-        interpret_file_as = BinaryStringToInt;
+    // Continue if strfind didn't fail and returned something greater than -1
+    if (readas_index != readas_size - 1) {
+        char readas_type[16];  // size is 16 to allow for wiggle room later on when naming more readas types
+        int readas_type_size = 0;
+
+        // This is the logic for getting the readas_type string from the arguments
+        for (int i = readas_index; args[i] != '"' && (i - readas_index) < 16 && i < arg_size; i++) {
+            readas_type[i - readas_index] = args[i];
+            readas_type_size++;
+        }
+        readas_type[readas_type_size] = '\0';
+
+        if (strncmp(readas_type, "binary", IntMin(readas_type_size, 6)) == 0) {
+            interpret_file_as = BinaryStringToInt;
+        } else if (strncmp(readas_type, "hexadecimal", IntMin(readas_type_size, 11)) == 0) {
+            interpret_file_as = HexStringToInt;
+        }
     }
     // ----- Options right now are binary and hexadecimal ------
 
     FILE *fptr;
+    printf("\n\nPATH: %s\n\n", PATH);
     fptr = fopen(PATH, "r");
     if (fptr == NULL) {
         printf("\n\nFile Opening error\n\n");
@@ -170,7 +177,18 @@ int strfind(char *searchfor, char *in, int searchfor_size, int in_size) {
         comparison_counter = 0;
     }
 
-    //if no index is found, -1 is returned
+    // if no index is found, -1 is returned
+    return -1;
+}
+
+int charfind(char searchfor, char *in, int in_size) {
+    for (int i = 0; i < in_size; i++) {
+        if (in[i] == searchfor) {
+            return i;
+        }
+    }
+
+    // If no index is found, it will return -1
     return -1;
 }
 
@@ -219,9 +237,9 @@ char *IntToBinaryString(char *str, int input, int padding) {
     }
 }
 
-//Inserts char at specified index, pushing everything at and after that index back by one
-//Make sure that the string you pass in enough space to accommadate everything being pushed left by one
-int strInsert(char* str, int index, char value, int size) {
+// Inserts char at specified index, pushing everything at and after that index back by one
+// Make sure that the string you pass in enough space to accommadate everything being pushed left by one
+int strInsertChar(char *str, int index, char value, int size) {
     char temp1 = value;
     for (int i = index; i < size + 1; i++) {
         char temp2 = str[i];
