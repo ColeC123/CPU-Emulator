@@ -14,7 +14,7 @@ int main(void) {
     PROCESS_INFORMATION proc_info;
 
     CreateProcessA(
-        "C:\\Users\\colec\\C Programs\\CPU Emulator\\C Files\\Emulator\\hello.exe",
+        "hello.exe",
         NULL,
         NULL,
         NULL,
