@@ -83,7 +83,7 @@ int ArgumentInputs(ArgList Emargs) {
     int (*interpret_file_as)(char *, int, int);
     interpret_file_as = BinaryStringToInt;
 
-    // Continue if strfind didn't fail and returned something greater than -1
+    // Continue if strfind didn't fail and returned something greater than -1 for the readastype
     if (readas_index != readas_size - 1) {
         char readas_type[16];  // size is 16 to allow for wiggle room later on when naming more readas types
         int readas_type_size = 0;
@@ -104,7 +104,6 @@ int ArgumentInputs(ArgList Emargs) {
     // ----- Options right now are binary and hexadecimal ------
 
     FILE *fptr;
-    printf("\n\nPATH: %s\n\n", PATH);
     fptr = fopen(PATH, "r");
     if (fptr == NULL) {
         printf("\n\nFile Opening error\n\n");

@@ -28,6 +28,9 @@ DWORD WINAPI myThread(LPVOID lpParamter) {
 }
 
 int main(void) {
+    //Frees itself from current console and makes a new one
+    //FreeConsole();
+    //AllocConsole();
     int test[100];
     memset(test, 0, 100 * sizeof(int));
 
