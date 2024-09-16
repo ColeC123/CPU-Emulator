@@ -23,11 +23,10 @@ int main(void) {
         NULL,
         NULL,
         &stinfo,
-        &proc_info
-    );
+        &proc_info);
 
-    WaitForSingleObject(proc_info.hProcess, 2000);
     DWORD proc_exit_code;
+    WaitForSingleObject(proc_info.hProcess, INFINITE);
     GetExitCodeProcess(proc_info.hProcess, &proc_exit_code);
     printf("\nProcess Exit Code: %d\n", (int)proc_exit_code);
     CloseHandle(proc_info.hProcess);
