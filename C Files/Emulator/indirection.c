@@ -1,13 +1,12 @@
 #include "stdio.h"
 #include "windows.h"
 
-#define LEFTMOSTBITSHORT 32768
-
 int main(void) {
     // This is the executable that the CreateProcess function will create a process of
     char executablePath[260];
     printf("\nEnter the full path to gcc.exe (no quotes around path): ");
 
+    //Get the path of to the compiler from standard input
     fgets(executablePath, 260, stdin);
 
     // fgets includes a newline character, so I have to remove it from the string
@@ -72,7 +71,7 @@ int main(void) {
 
         WaitForSingleObject(proc_info.hProcess, INFINITE);  // Wait for gcc to finish compiling
         DWORD exit_code = -1;                               // initialize it to -1 to see if GetExitCode returns something else
-        GetExitCodeProcess(proc_info.hProcess, &exit_code);
+        GetExitCodeProcess(proc_info.hProcess, &exit_code); //Get the exit code of the process
         printf("\nGCC exitcode: %d\n", exit_code);
 
         CloseHandle(proc_info.hProcess);
@@ -80,6 +79,8 @@ int main(void) {
 
         char exit_input[10];
         printf("\nIf you want to continue, type y, else type anything else: ");
+        
+        //Get a string from standard input and check to see if the first character is y or Y and exit the program if that is ture
         fgets(exit_input, 10, stdin);
         if (exit_input[0] != 'y' && exit_input[0] != 'Y') {
             should_run = FALSE;
