@@ -4,6 +4,8 @@
 #define INT_LM_BIT 2147483648
 
 int main(void) {
-    printf("\nHello World!\n");
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    printf("\nPage Granularity: %d | Allocation Granularity: %d\n", sysinfo.dwPageSize, sysinfo.dwAllocationGranularity);
     return 0;
 }
