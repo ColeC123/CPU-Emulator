@@ -1,6 +1,9 @@
 #include "stdio.h"
 #include "windows.h"
 
+// the name of the shared file mapping object between processes
+#define file_share_name "IPCFILEMAPSHAREDOBJECT"
+
 int main(void) {
     SECURITY_ATTRIBUTES file_attribs = {
         .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -11,7 +14,7 @@ int main(void) {
     HANDLE fhandle = CreateFileA(
         "IPCFIlE",                                          // Name of the file
         GENERIC_READ | GENERIC_WRITE,                       // The desired access
-        0,                                                  // the sharing mode
+        FILE_SHARE_READ | FILE_SHARE_WRITE,                 // the sharing mode
         &file_attribs,                                      // the security attributes
         CREATE_NEW,                                         // the creation info
         FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE,  // the flags and attributes of the file
@@ -41,12 +44,13 @@ int main(void) {
     printf("\nFile Size: %d\n", (int)file_size);
 
     HANDLE fmap = CreateFileMappingA(
-        fhandle,                   // handle to the file to be mapped
-        &fmap_attribs,             // the security attributes of teh file map
-        PAGE_READWRITE,            // the access rights
-        0,                         // The high order dword size is 0
-        0,                         // the low order dword size is 300
-        "process_file_map_object"  // the name of the file mapping object
+        fhandle,         // handle to the file to be mapped
+        &fmap_attribs,   // the security attributes of teh file map
+        PAGE_READWRITE,  // the access rights
+        //since both of the sizes below are 0, the file mapping will adopt the current size of the process
+        0,               // The high order dword size is 0
+        0,               // the low order dword size is 300
+        file_share_name  // the name of the file mapping object
     );
 
     if (fmap == NULL) {
@@ -84,7 +88,7 @@ int main(void) {
 
     CreateProcessA(
         "hello.exe",         // Name of the executable to create a process (instance of a program) of
-        NULL,                // Command line arguments. I have none, so this is NULL
+        file_share_name,     // I am using this to pass along the name of the file mapping object created above
         NULL,                // Secutiry attributes. I am using the default, so this is NULL
         NULL,                // Thread attributes. I am using the default, so this is NULL
         FALSE,               // Whether or not to inherit handles. I want this process to be entirely separate, so this is set to false.
@@ -94,6 +98,33 @@ int main(void) {
         &stinfo,             // This will use the information specified in the startup info struct for creating the process
         &proc_info);         // This will populate the process information struct with handles and process ids
 
+
+    system("cls");
+    char buffer[100];
+    buffer[0] = 'f';
+    while (buffer[0] != 'e') {
+        system("cls");
+        printf("Enter the index: ");
+        fgets(buffer, 100, stdin);
+        for (int i = 0; buffer[i] != '\0'; i++) {
+            if (buffer[i] == '\n') {
+                buffer[i] = '\0';
+            }
+        }
+        if (buffer[0] == 'e') {
+            break;
+        }
+        int index = atoi(buffer);
+        printf("Enter the value: ");
+        fgets(buffer, 100, stdin);
+        for (int i = 0; buffer[i] != '\0'; i++) {
+            if (buffer[i] == '\n') {
+                buffer[i] = '\0';
+            }
+        }
+        intview[index] = atoi(buffer);
+    }
+
     UnmapViewOfFile(fview);  // Unmap the file view from memory
 
     CloseHandle(proc_info.hProcess);  // Don't need any handles to the spawned process in this function
@@ -101,5 +132,6 @@ int main(void) {
 
     CloseHandle(fhandle);  // Make sure to close these handles
     CloseHandle(fmap);     // Make sure to close these handles
+
     return 0;
 }
