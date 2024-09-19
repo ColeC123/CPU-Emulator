@@ -43,7 +43,36 @@ enum register_names {
     rip = 0b10000,
 };
 
-int main(void) {
+int main(int argc, char** argv) {
+    FILE* ROM;
+    //if no commands are passed to specify which binary file should be loaded into memory at startup, it will assume the name is ROM.bin
+    if (argc == 0) {
+        ROM = fopen("ROM.bin", "rb");
+
+        if (ROM == NULL) {
+            printf("No ROM file has been provided\n");
+            return 1;
+        }
+    } else {
+        //Open the binary file spcified by the command line arguments
+        ROM = fopen(argv[0], "rb");
+
+        if (ROM == NULL) {
+            printf("Something went wrong trying to open the ROM file\n");
+            return 1;
+        }
+    }
+
+    int ROM_size = 0;
+    //find the end of the file
+    fseek(ROM, 0L, SEEK_END);
+    //get the current offset from the beginning of the file in bytes, and then divide by four since this emulator works with instructions of 
+    //32 bits, and 4 bytes is 32 bits
+    ROM_size = (int)ftell(ROM) / (int)4;
+    //set the file pointer back the beginning of the file
+    fseek(ROM, 0L, SEEK_SET);
+
+
     RAM = (int *)malloc(RAM_SIZE * sizeof(int));
 
     inputParams inputs = {.exit = false, .key_interrupt = 0};
