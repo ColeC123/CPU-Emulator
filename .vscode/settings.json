@@ -5,7 +5,11 @@
         "string.h": "c",
         "stdlib.h": "c",
         "stdio.h": "c",
-        "windows.h": "c"
+        "windows.h": "c",
+        "strfunctions.h": "c",
+        "cstdlib": "c",
+        "include.h": "c",
+        "inputthread.h": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
 }

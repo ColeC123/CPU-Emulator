@@ -1,10 +1,10 @@
-#include "cli.h"
+#include "inputThread.h"
 #include "stdbool.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 #include "windows.h"
-#include "inputThread.h"
+#include "strfunctions.h"
 
 int *RAM;
 
@@ -43,10 +43,10 @@ enum register_names {
     rip = 0b10000,
 };
 
-int main(int argc, char** argv) {
-    FILE* ROM;
-    //if no commands are passed to specify which binary file should be loaded into memory at startup, it will assume the name is ROM.bin
-    if (argc == 0) {
+int main(int argc, char **argv) {
+    FILE *ROM;
+    // if no commands are passed to specify which binary file should be loaded into memory at startup, it will assume the name is ROM.bin
+    if (argc == 1) {
         ROM = fopen("ROM.bin", "rb");
 
         if (ROM == NULL) {
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
             return 1;
         }
     } else {
-        //Open the binary file spcified by the command line arguments
+        // Open the binary file spcified by the command line arguments
         ROM = fopen(argv[0], "rb");
 
         if (ROM == NULL) {
@@ -63,17 +63,16 @@ int main(int argc, char** argv) {
         }
     }
 
-    int ROM_size = 0;
-    //find the end of the file
-    fseek(ROM, 0L, SEEK_END);
-    //get the current offset from the beginning of the file in bytes, and then divide by four since this emulator works with instructions of 
-    //32 bits, and 4 bytes is 32 bits
-    ROM_size = (int)ftell(ROM) / (int)4;
-    //set the file pointer back the beginning of the file
-    fseek(ROM, 0L, SEEK_SET);
-
-
     RAM = (int *)malloc(RAM_SIZE * sizeof(int));
+
+    // Iterate through the binary file by the size of an integer and store the value there in RAM at the current ROM_pos
+    int ROM_pos = 0;
+    while (!feof(ROM)) {
+        fread(RAM + ROM_pos, sizeof(int), 1, ROM);
+        ROM_pos++;
+    }
+
+    fclose(ROM);
 
     inputParams inputs = {.exit = false, .key_interrupt = 0};
 
@@ -86,224 +85,218 @@ int main(int argc, char** argv) {
 
     bool emulation_active = true;
 
-    while (emulation_active) {
-        bool running = true;
+    bool running = true;
 
-        ArgumentInputs((ArgList){.RAM = RAM, .emulation_active = &emulation_active});
+    // unsigned int makes for more consistent bit shifting behavior
+    unsigned int instruction = 0;
+    while (running) {
+        instruction = RAM[program_counter];
+        registers[rip]++;
 
-        // unsigned int makes for more consistent bit shifting behavior
-        unsigned int instruction = 0;
-        while (running) {
-            instruction = RAM[program_counter];
-            registers[rip]++;
+        // Consider removing bitshift and replacing it with bitwise and (see example in key.c)
+        binarynum = IntToBinaryString(binarynum, instruction, 32);
+        printf("opcode: %s\n", binarynum);
 
-            // Consider removing bitshift and replacing it with bitwise and (see example in key.c)
-            binarynum = IntToBinaryString(binarynum, instruction, 32);
-            printf("opcode: %s\n", binarynum);
+        switch (instruction >> 27) {
+            case 0b00000:
+                printf("HLT Instruction");
+                running = false;
+                break;
 
-            switch (instruction >> 27) {
-                case 0b00000:
-                    printf("HLT Instruction");
-                    running = false;
-                    break;
+            case 0b00001:
+                printf("MOV Instruction");
+                registers[(instruction << 5) >> 27] = RAM[registers[(instruction << 10) >> 27]];
+                break;
 
-                case 0b00001:
-                    printf("MOV Instruction");
-                    registers[(instruction << 5) >> 27] = RAM[registers[(instruction << 10) >> 27]];
-                    break;
+            case 0b00010:
+                printf("ADD Instruction");
+                registers[(instruction << 5) >> 27] += registers[(instruction << 10) >> 27];
+                break;
 
-                case 0b00010:
-                    printf("ADD Instruction");
-                    registers[(instruction << 5) >> 27] += registers[(instruction << 10) >> 27];
-                    break;
+            case 0b00011:
+                printf("CMP Instruction");
+                int comparison_result = registers[(instruction << 5) >> 27] - registers[(instruction << 10) >> 27];
 
-                case 0b00011:
-                    printf("CMP Instruction");
-                    int comparison_result = registers[(instruction << 5) >> 27] - registers[(instruction << 10) >> 27];
+                if (comparison_result == 0) {
+                    ZF_Flag = 1;
+                } else {
+                    ZF_Flag = 0;
+                }
 
-                    if (comparison_result == 0) {
-                        ZF_Flag = 1;
-                    } else {
-                        ZF_Flag = 0;
-                    }
+                if (comparison_result > 0) {
+                    PI_Flag = 1;
+                } else {
+                    PI_Flag = 0;
+                }
 
-                    if (comparison_result > 0) {
-                        PI_Flag = 1;
-                    } else {
-                        PI_Flag = 0;
-                    }
+                if (comparison_result < 0) {
+                    NI_Flag = 1;
+                } else {
+                    NI_Flag = 0;
+                }
 
-                    if (comparison_result < 0) {
-                        NI_Flag = 1;
-                    } else {
-                        NI_Flag = 0;
-                    }
+                break;
 
-                    break;
+            case 0b00100:
+                printf("JMPIF Instruction");
+                int jump_condition = (instruction << 5) >> 27;
+                switch (jump_condition) {
+                    case 0b00000:
+                        if (ZF_Flag == 1) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
 
-                case 0b00100:
-                    printf("JMPIF Instruction");
-                    int jump_condition = (instruction << 5) >> 27;
-                    switch (jump_condition) {
-                        case 0b00000:
-                            if (ZF_Flag == 1) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
+                    case 0b00001:
+                        if (ZF_Flag == 0) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
 
-                        case 0b00001:
-                            if (ZF_Flag == 0) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
+                    case 0b00010:
+                        if (NI_Flag == 1) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
 
-                        case 0b00010:
-                            if (NI_Flag == 1) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
+                    case 0b00011:
+                        if (PI_Flag == 1) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
 
-                        case 0b00011:
-                            if (PI_Flag == 1) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
+                    case 0b00100:
+                        if (NI_Flag == 1 || ZF_Flag == 1) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
 
-                        case 0b00100:
-                            if (NI_Flag == 1 || ZF_Flag == 1) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
+                    case 0b00101:
+                        if (PI_Flag == 1 || ZF_Flag == 1) {
+                            registers[rip] = registers[(instruction << 10) >> 27];
+                        }
+                        break;
+                }
+                break;
 
-                        case 0b00101:
-                            if (PI_Flag == 1 || ZF_Flag == 1) {
-                                registers[rip] = registers[(instruction << 10) >> 27];
-                            }
-                            break;
-                    }
-                    break;
+            case 0b00101:
+                printf("SUB Instruction");
+                registers[(instruction << 5) >> 27] -= registers[(instruction << 10) >> 27];
+                break;
 
-                case 0b00101:
-                    printf("SUB Instruction");
-                    registers[(instruction << 5) >> 27] -= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b00110:
-                    printf("PUSH/POP");
-                    if ((instruction << 5) >> 31 == 0) {
-                        registers[rsp]--;
-                        RAM[registers[rsp]] = registers[(instruction << 6) >> 27];
-                    } else {
-                        registers[(instruction << 6) >> 27] = RAM[registers[rsp]];
-                        registers[rsp]++;
-                    }
-                    break;
-
-                case 0b00111:
-                    printf("STORE Instruction");
-                    RAM[registers[(instruction << 5) >> 27]] = registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b01000:
-                    printf("LBITSHFTR Instruction");
-                    // instruction is already an unsigned integer
-                    // This gives consistent behavior for bit shifting right (left is filled with 0s always)
-                    registers[(instruction << 5) >> 27] >>= (registers[(instruction << 10) >> 27]);
-                    break;
-
-                case 0b01001:
-                    printf("BITSHFTL Instruction");
-                    // instruction is already an unsigned integer, giving it consistent bit shifting behavior
-                    registers[(instruction << 5) >> 27] <<= (registers[(instruction << 10) >> 27]);
-                    break;
-
-                case 0b01010:
-                    printf("AND Instruction");
-                    registers[(instruction << 5) >> 27] &= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b01011:
-                    printf("XOR Instruction");
-                    registers[(instruction << 5) >> 27] ^= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b01100:
-                    printf("OR Instruction");
-                    registers[(instruction << 5) >> 27] |= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b01101:
-                    printf("NOT Instruction");
-                    registers[(instruction << 5) >> 27] = ~registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b01110:
-                    printf("EQU Instruction");
-                    registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b10000:
-                    printf("IMUL Instruction");
-                    registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b10001:
-                    printf("IDIV Instruction");
-                    registers[(instruction << 5) >> 27] /= registers[(instruction << 10) >> 27];
-                    break;
-
-                case 0b10010:
-                    printf("CALL Instruction");
-                    // Push return address to stack
+            case 0b00110:
+                printf("PUSH/POP");
+                if ((instruction << 5) >> 31 == 0) {
                     registers[rsp]--;
-                    RAM[registers[rsp]] = registers[rip];
-                    // set rip to address of function
-                    registers[rip] = registers[(instruction << 5) >> 27];
-                    break;
+                    RAM[registers[rsp]] = registers[(instruction << 6) >> 27];
+                } else {
+                    registers[(instruction << 6) >> 27] = RAM[registers[rsp]];
+                    registers[rsp]++;
+                }
+                break;
 
-                case 0b10011:
-                    printf("SETREG Instruction");
-                    registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
-                    break;
+            case 0b00111:
+                printf("STORE Instruction");
+                RAM[registers[(instruction << 5) >> 27]] = registers[(instruction << 10) >> 27];
+                break;
 
-                default:
-                    printf("Opcode Identification Failure");
-                    break;
-            }
-            printf("\n\n");
-            program_counter = registers[rip];
+            case 0b01000:
+                printf("LBITSHFTR Instruction");
+                // instruction is already an unsigned integer
+                // This gives consistent behavior for bit shifting right (left is filled with 0s always)
+                registers[(instruction << 5) >> 27] >>= (registers[(instruction << 10) >> 27]);
+                break;
+
+            case 0b01001:
+                printf("BITSHFTL Instruction");
+                // instruction is already an unsigned integer, giving it consistent bit shifting behavior
+                registers[(instruction << 5) >> 27] <<= (registers[(instruction << 10) >> 27]);
+                break;
+
+            case 0b01010:
+                printf("AND Instruction");
+                registers[(instruction << 5) >> 27] &= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b01011:
+                printf("XOR Instruction");
+                registers[(instruction << 5) >> 27] ^= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b01100:
+                printf("OR Instruction");
+                registers[(instruction << 5) >> 27] |= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b01101:
+                printf("NOT Instruction");
+                registers[(instruction << 5) >> 27] = ~registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b01110:
+                printf("EQU Instruction");
+                registers[(instruction << 5) >> 27] = registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10000:
+                printf("IMUL Instruction");
+                registers[(instruction << 5) >> 27] *= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10001:
+                printf("IDIV Instruction");
+                registers[(instruction << 5) >> 27] /= registers[(instruction << 10) >> 27];
+                break;
+
+            case 0b10010:
+                printf("CALL Instruction");
+                // Push return address to stack
+                registers[rsp]--;
+                RAM[registers[rsp]] = registers[rip];
+                // set rip to address of function
+                registers[rip] = registers[(instruction << 5) >> 27];
+                break;
+
+            case 0b10011:
+                printf("SETREG Instruction");
+                registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
+                break;
+
+            default:
+                printf("Opcode Identification Failure");
+                break;
         }
-
-        printf("\n\nrax: %d  |  rbx: %d\n", registers[rax], registers[rbx]);
-        printf("rcx: %d  |  rdx: %d\n", registers[rcx], registers[rdx]);
-        printf("rsi: %d  |  rdi: %d\n", registers[rsi], registers[rdi]);
-        printf("rbp: %d  |  rsp: %d\n", registers[rbp], registers[rsp]);
-        printf("r1:  %d  |  r2:  %d\n", registers[r1], registers[r2]);
-        printf("r3:  %d  |  r4:  %d\n", registers[r3], registers[r4]);
-        printf("r5:  %d  |  r6:  %d\n", registers[r5], registers[r6]);
-        printf("r7:  %d  |  r8:  %d\n", registers[r7], registers[r8]);
-        printf("rip: %d\n\n", registers[rip]);
-
-        // The following code resets all registers, flags, and the program counter to zero
-        // This allows for the code to continue to run in predictable ways when the next program is initiated
-        program_counter = 0;
-        for (int i = 0; i < 17; i++) {
-            registers[i] = 0;
-        }
-        ZF_Flag = 0;
-        PI_Flag = 0;
-        NI_Flag = 0;
+        printf("\n\n");
+        program_counter = registers[rip];
     }
 
-    //Exit thread
-    inputs.exit = true; //lets thread know to end the loop and exit
-    WaitForSingleObject(input_handle, 1000); //Wait for up to one second for the thread to exit
-    DWORD thread_exit_code;
-    GetExitCodeThread(input_handle, &thread_exit_code); //Get the exit code of the thread (should be 0) to make sure it returned properly
-    printf("\nThread Exit Code: %d\n", (int)thread_exit_code);
-    CloseHandle(input_handle); //close the handle associated with that thread
+    printf("\n\nrax: %d  |  rbx: %d\n", registers[rax], registers[rbx]);
+    printf("rcx: %d  |  rdx: %d\n", registers[rcx], registers[rdx]);
+    printf("rsi: %d  |  rdi: %d\n", registers[rsi], registers[rdi]);
+    printf("rbp: %d  |  rsp: %d\n", registers[rbp], registers[rsp]);
+    printf("r1:  %d  |  r2:  %d\n", registers[r1], registers[r2]);
+    printf("r3:  %d  |  r4:  %d\n", registers[r3], registers[r4]);
+    printf("r5:  %d  |  r6:  %d\n", registers[r5], registers[r6]);
+    printf("r7:  %d  |  r8:  %d\n", registers[r7], registers[r8]);
+    printf("rip: %d\n\n", registers[rip]);
 
-    
+    // The following code resets all registers, flags, and the program counter to zero
+    // This allows for the code to continue to run in predictable ways when the next program is initiated
+    program_counter = 0;
+    for (int i = 0; i < 17; i++) {
+        registers[i] = 0;
+    }
+    ZF_Flag = 0;
+    PI_Flag = 0;
+    NI_Flag = 0;
+
+    // Exit thread
+    inputs.exit = true;                       // lets thread know to end the loop and exit
+    WaitForSingleObject(input_handle, 1000);  // Wait for up to one second for the thread to exit
+    DWORD thread_exit_code;
+    GetExitCodeThread(input_handle, &thread_exit_code);  // Get the exit code of the thread (should be 0) to make sure it returned properly
+    printf("\nThread Exit Code: %d\n", (int)thread_exit_code);
+    CloseHandle(input_handle);  // close the handle associated with that thread
 
     // free heap allocated resources
     free(RAM);
