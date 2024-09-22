@@ -20,57 +20,12 @@ int main(int argc, char** argv) {
             if (convFileCondition(argv, argc) == 1) {
                 printf("\nFile Creation Failed\n");
                 return 1;
+            } else {
+                printf("\nSuccessfully Executed Command\n");
             }
         }
     }
 
-    /*
-    FILE *fptr;
-    fptr = fopen(PATH, "r");
-    if (fptr == NULL) {
-        printf("\n\nFile Opening error\n\n");
-    }
-
-    char mystring[MAX_FILE_LINE_READ];
-    bool semicolon_present = false;
-
-    while (fgets(mystring, MAX_FILE_LINE_READ, fptr)) {
-        int count = 0;
-        while (mystring[count] != '\0' && file_string_logical_size < max_file_string_length) {
-            // The logic for semicolon comments
-            if (mystring[count] == ';') {
-                semicolon_present = true;
-            } else if (mystring[count] == '\n') {
-                semicolon_present = false;
-            }
-
-            // Spaces are removed while moving through the file because it is more efficient than copying the entire file and then removing them
-            // semicolon bool is needed because fgets will move through the entire file no matter how small MAX_FILE_LINE_READ is (within reason)
-            // fgets sort of reads through the file in chunks
-            if (mystring[count] != ' ' && semicolon_present == false) {
-                file_string[file_string_logical_size] = mystring[count];
-                file_string_logical_size++;
-            }
-
-            count++;
-        }
-    }
-    fclose(fptr);
-    */
-
-    //<= is in order to make sure that the null terminating character of the file is included in the search
-    /*
-    while (curr_file_search_count <= file_string_logical_size) {
-        if (file_string[curr_file_search_count] == '\n' || file_string[curr_file_search_count] == '\0') {
-            // fancy function pointers to make code cleaner and faciliate addition of more file parsing options
-            Emargs.RAM[ram_position_count] = (*interpret_file_as)(file_string, past_file_search_count, curr_file_search_count - past_file_search_count);
-            // add one to account for the fact that curr_file_search_count will be increased by one right after this
-            past_file_search_count = curr_file_search_count + 1;
-            ram_position_count++;
-        }
-        curr_file_search_count++;
-    }
-    */
     return 0;
 }
 
@@ -97,7 +52,9 @@ int convFileCondition(char** searchthrough, int argsize) {
     }
     file_type[file_type_count] = '\0';
 
-    printf("\nFile Type: %s\n", file_type);
+
+    //This is used for debugging
+    //printf("\nFile Type: %s\n", file_type);
 
     // bt2b stands for binary text in a .txt file (as in 001000) to binary file (.bin)
     if (strncmp(searchthrough[3], "bt2b", 4) == 0 && strncmp(file_type, "txt", 3) == 0) {
@@ -108,7 +65,6 @@ int convFileCondition(char** searchthrough, int argsize) {
             // This will indicate in the main function to exit since the file couldn't be opened
             return 1;
         }
-        printf("\nSuccessfully Parsed command\n");
 
         // This is used to get the size of te file to know how much to allocate with malloc
         fseek(given_file, 0L, SEEK_END);
@@ -194,9 +150,46 @@ int convFileCondition(char** searchthrough, int argsize) {
         return 0;
     }
 
-    // b2bt stands for binary file (.bin) to binary textfile
+    // b2bt stands for binary file (.bin) to binary textfile (.txt)
     if (strncmp(searchthrough[3], "b2bt", 4) == 0 && strncmp(file_type, "bin", 3) == 0) {
-        // Do stuff to convert binary file to textfile filled with binary strings
+        FILE* given_file = fopen(searchthrough[2], "rb");
+        FILE* output_file = fopen(searchthrough[4], "wt");
+
+        if (given_file == NULL) {
+            //lets the main function to exit since it failed to open the given file
+            return 1;
+        }
+
+        //Get the size of the file to know how much memory to allocate
+        int file_int_size = 0;
+        fseek(given_file, 0L, SEEK_END);
+
+        file_int_size = (int)ftell(given_file);
+        rewind(given_file);
+
+        int* file_int = (int*)malloc(file_int_size * sizeof(int));
+        int file_int_logical_size = 0;
+
+        //loop through the file until the end of the file and read the contents of the file as an int to a buffer
+        while (!feof(given_file)) {
+            fread(file_int + file_int_logical_size, sizeof(int), 1, given_file);
+            file_int_logical_size++;
+        }
+
+        //Write the binary of the file as a character string of 1s and 0s
+        char* binary_string = NULL;
+        for (int i = 0; i < file_int_logical_size; i++) {
+            binary_string = IntToBinaryString(binary_string, file_int[i], 32);
+            fprintf(output_file, binary_string);
+            fprintf(output_file, "\n");
+        }
+
+        free(file_int);
+        fclose(given_file);
+        fclose(output_file);
+
+        return 0;
     }
+
     return 0;
 }
