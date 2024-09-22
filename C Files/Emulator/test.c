@@ -2,9 +2,9 @@
 #include "stdbool.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "strfunctions.h"
 #include "string.h"
 #include "windows.h"
-#include "strfunctions.h"
 
 int *RAM;
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
         }
     } else {
         // Open the binary file spcified by the command line arguments
-        ROM = fopen(argv[0], "rb");
+        ROM = fopen(argv[1], "rb");
 
         if (ROM == NULL) {
             printf("Something went wrong trying to open the ROM file\n");
@@ -65,11 +65,11 @@ int main(int argc, char **argv) {
 
     RAM = (int *)malloc(RAM_SIZE * sizeof(int));
 
-    // Iterate through the binary file by the size of an integer and store the value there in RAM at the current ROM_pos
-    int ROM_pos = 0;
+    // load the values in the ROM file directly into RAM, starting at index 0 of each
+    int index_tracker = 0;
     while (!feof(ROM)) {
-        fread(RAM + ROM_pos, sizeof(int), 1, ROM);
-        ROM_pos++;
+        fread(RAM + index_tracker, sizeof(int), 1, ROM);
+        index_tracker++;
     }
 
     fclose(ROM);

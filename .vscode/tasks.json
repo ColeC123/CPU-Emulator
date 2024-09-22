@@ -7,7 +7,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${fileDirname}\\cli.c",
+                "${fileDirname}\\strfunctions.c",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
             ],
