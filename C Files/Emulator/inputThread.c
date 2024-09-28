@@ -186,18 +186,19 @@ DWORD WINAPI inputThread(LPVOID lpParam) {
             // most significant bit set means key is down in GetAsyncKeyState
             if (key_tracker[i] == false && GetAsyncKeyState(vk_check[i]) & (int)INT_LM_BIT) {
                 // note that keypress has been recorded
-                key_tracker[i] == true;
+                key_tracker[i] = true;
 
                 // the bitwise or with INT_LM_BIT is to set the left bit equal to 1 to indicate the key is down
                 inputs->key_interrupt = conversion_array[vk_check[i]] | INT_LM_BIT;
             } else if (key_tracker[i] == true && !(GetAsyncKeyState(vk_check[i]) & (int)INT_LM_BIT)) {
                 // note that key-up has been recorded
-                key_tracker[i] == false;
+                key_tracker[i] = false;
 
                 // No bitwise or is needed here since a 0 in the leftmost bit would be a negative value
                 inputs->key_interrupt = conversion_array[vk_check[i]];
             }
         }
     }
+
     return 0;
 }

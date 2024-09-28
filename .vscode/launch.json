@@ -6,10 +6,7 @@
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
             "args": [
-                "convfile",
-                "C:\\Users\\colec\\C Programs\\CPU Emulator\\text\\prgm3.txt",
-                "bt2b",
-                "rom.bin"
+                
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

@@ -74,6 +74,22 @@ int main(int argc, char **argv) {
 
     fclose(ROM);
 
+    HANDLE DISK = CreateFileA(
+        "CPUEmulatorDisk.bin",
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+
+    if (DISK == INVALID_HANDLE_VALUE) {
+        printf("Failed create or open DISK file\n");
+        free(RAM);
+        return 0;
+    }
+
     inputParams inputs = {.exit = false, .key_interrupt = 0};
 
     DWORD input_thread_id = 0;
@@ -262,6 +278,22 @@ int main(int argc, char **argv) {
                 registers[(instruction << 5) >> 27] = (instruction << 10) >> 10;
                 break;
 
+            case 0b10100:
+                printf("LDISK Instruction");
+                // seek position in file of disk address contained in register2
+                SetFilePointer(DISK, registers[(instruction << 10) >> 27], NULL, FILE_BEGIN);
+                ReadFile(DISK, &registers[(instruction << 5) >> 27], sizeof(int), NULL, NULL);
+                printf("\nValue: %d", *(registers + ((instruction << 5) >> 27)));
+                break;
+
+            case 0b10101:
+                printf("SDISK Instruction");
+                // seek position in file of disk address contained in register1
+                printf("\nValue: %d", *(registers + ((instruction << 10) >> 27)));
+                SetFilePointer(DISK, registers[(instruction << 5) >> 27], NULL, FILE_BEGIN);
+                WriteFile(DISK, &registers[(instruction << 10) >> 27], sizeof(int), NULL, NULL);
+                break;
+
             default:
                 printf("Opcode Identification Failure");
                 break;
@@ -297,6 +329,9 @@ int main(int argc, char **argv) {
     GetExitCodeThread(input_handle, &thread_exit_code);  // Get the exit code of the thread (should be 0) to make sure it returned properly
     printf("\nThread Exit Code: %d\n", (int)thread_exit_code);
     CloseHandle(input_handle);  // close the handle associated with that thread
+
+    // Close file handle to disk
+    CloseHandle(DISK);
 
     // free heap allocated resources
     free(RAM);

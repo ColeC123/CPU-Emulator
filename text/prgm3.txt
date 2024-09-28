@@ -39,4 +39,6 @@
 ;
 ;
 00110 1 01100 000000000000000000000       ; pop return address into r5
+10101 00011 00001 00000000000000000        ; SDISK: store on disk at address contained in rdx the value contained in rbx
+10100 01111 00011 00000000000000000        ; LDISK: load into r8 the value contained by disk address defined in rdx
 01110 10000 01100 00000000000000000       ; jump back to main function by setting rip equal to r5

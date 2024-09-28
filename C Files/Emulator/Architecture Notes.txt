@@ -1,6 +1,7 @@
 First 5 bits detail the opcode (operation code / instruction code)
 registers are 5 bits
 addresses are 22 bits
+disk addresses are 32 bits
 
 memory operations go destination, then source (like intel syntax)
 
@@ -65,6 +66,10 @@ IDIV (integer division) = (opcode) 10001 (register1) xxxxx (register2) xxxxx -> 
 CALL (call function) = (opcode) 10010 (register, which contains the address of the function to be jumped to) (remaining bits are undefined)
 
 SETREG (set register equal to constant value that is known at program time) = (opcode) 10011 (register) xxxxx (constant value, 22 bits)
+
+LDISK (load value at disk address specified in register2 into register1) = (opcode) 10100 (register1) xxxxx (register2) xxxxx (remaining bits are undefined)
+
+SDISK (store value contained in register2 at disk address contained in register1) = (opcode) 10101 (register1) xxxxx (register2) xxxxx (remaining bits are undefined)
 
 Register Information
 

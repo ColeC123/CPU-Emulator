@@ -96,4 +96,5 @@ int strInsertChar(char *str, int index, char value, int size) {
         str[i] = temp1;
         temp1 = temp2;
     }
+    return 0;
 }
