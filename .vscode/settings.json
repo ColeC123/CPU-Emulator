@@ -9,7 +9,8 @@
         "strfunctions.h": "c",
         "cstdlib": "c",
         "include.h": "c",
-        "inputthread.h": "c"
+        "inputthread.h": "c",
+        "winnt.h": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0}",
 }

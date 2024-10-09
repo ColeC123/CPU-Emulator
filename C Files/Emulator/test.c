@@ -74,6 +74,8 @@ int main(int argc, char **argv) {
 
     fclose(ROM);
 
+    //Had to use win32 api functions for handling the drive file since I needed a function that would allow me to overwrite
+    //prior values without completely destroying the contents on open as fopen with write functionality would do
     HANDLE DISK = CreateFileA(
         "CPUEmulatorDisk.bin",
         GENERIC_READ | GENERIC_WRITE,
@@ -84,13 +86,14 @@ int main(int argc, char **argv) {
         NULL
     );
 
+    //This just checks CreateFileA function failed, and will return and print an error if that occurs
     if (DISK == INVALID_HANDLE_VALUE) {
         printf("Failed create or open DISK file\n");
         free(RAM);
         return 0;
     }
 
-    inputParams inputs = {.exit = false, .key_interrupt = 0};
+    inputParams inputs = (inputParams){.exit = false, .key_interrupt = 0};
 
     DWORD input_thread_id = 0;
     // Create the input thread immediately, allocate a stack size of 600 integer values, and pass in a pointer to the key_interrupt value
@@ -302,15 +305,15 @@ int main(int argc, char **argv) {
         program_counter = registers[rip];
     }
 
-    printf("\n\nrax: %d  |  rbx: %d\n", registers[rax], registers[rbx]);
-    printf("rcx: %d  |  rdx: %d\n", registers[rcx], registers[rdx]);
-    printf("rsi: %d  |  rdi: %d\n", registers[rsi], registers[rdi]);
-    printf("rbp: %d  |  rsp: %d\n", registers[rbp], registers[rsp]);
-    printf("r1:  %d  |  r2:  %d\n", registers[r1], registers[r2]);
-    printf("r3:  %d  |  r4:  %d\n", registers[r3], registers[r4]);
-    printf("r5:  %d  |  r6:  %d\n", registers[r5], registers[r6]);
-    printf("r7:  %d  |  r8:  %d\n", registers[r7], registers[r8]);
-    printf("rip: %d\n\n", registers[rip]);
+    printf("\n\nrax: %5d  |  rbx: %5d\n", registers[rax], registers[rbx]);
+    printf("rcx: %5d  |  rdx: %5d\n", registers[rcx], registers[rdx]);
+    printf("rsi: %5d  |  rdi: %5d\n", registers[rsi], registers[rdi]);
+    printf("rbp: %5d  |  rsp: %5d\n", registers[rbp], registers[rsp]);
+    printf("r1:  %5d  |  r2:  %5d\n", registers[r1], registers[r2]);
+    printf("r3:  %5d  |  r4:  %5d\n", registers[r3], registers[r4]);
+    printf("r5:  %5d  |  r6:  %5d\n", registers[r5], registers[r6]);
+    printf("r7:  %5d  |  r8:  %5d\n", registers[r7], registers[r8]);
+    printf("rip: %5d\n\n", registers[rip]);
 
     // The following code resets all registers, flags, and the program counter to zero
     // This allows for the code to continue to run in predictable ways when the next program is initiated
